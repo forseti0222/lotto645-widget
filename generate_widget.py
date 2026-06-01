@@ -2,8 +2,10 @@
 """lotto_data.js 읽어서 widget-01.html 재생성"""
 import os
 
-BASE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(BASE)
+ROOT = os.path.dirname(os.path.abspath(__file__))
+# GitHub Actions에서는 레포 루트에서 실행되므로 같은 폴더 기준
+if not os.path.exists(os.path.join(ROOT, "lotto_data.js")):
+    ROOT = os.getcwd()
 
 DATA_JS  = os.path.join(ROOT, "lotto_data.js")
 WIDGET   = os.path.join(ROOT, "widget-01.html")

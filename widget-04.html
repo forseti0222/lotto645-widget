@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>번호 출현 통계 대시보드 (목업)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;padding:16px 16px 40px;}
+.wrap{max-width:720px;margin:0 auto;}
+
+.head{background:#fff;border-radius:16px;padding:20px 24px 18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.badge{display:inline-block;background:#e8f0fe;color:#1a73e8;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:8px;letter-spacing:.5px;}
+.title{font-size:20px;font-weight:700;color:#111;margin-bottom:4px;}
+.subtitle{font-size:13px;color:#888;}
+
+/* 탭 */
+.tabs{display:flex;gap:6px;margin-bottom:12px;}
+.tab{flex:1;padding:10px 0;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#888;box-shadow:0 1px 3px rgba(0,0,0,.07);transition:all .18s;}
+.tab.active{background:#1a73e8;color:#fff;}
+
+/* 카드 */
+.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.card-title{font-size:13px;font-weight:700;color:#555;margin-bottom:14px;}
+
+/* 필터 */
+.filter-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-btn{padding:6px 14px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#666;transition:all .15s;}
+.filter-btn.active{border-color:#1a73e8;background:#e8f0fe;color:#1a73e8;}
+
+/* 차트 선택 버튼 */
+.chart-sel{display:flex;gap:6px;margin-bottom:16px;}
+.csel-btn{flex:1;padding:8px 0;border:1.5px solid #e0e0e0;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#666;transition:all .15s;text-align:center;}
+.csel-btn.active{border-color:#1a73e8;background:#1a73e8;color:#fff;}
+
+/* 요약 수치 */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.stat-box{background:#f8f9fa;border-radius:10px;padding:12px;text-align:center;}
+.stat-label{font-size:11px;color:#999;margin-bottom:4px;}
+.stat-val{font-size:16px;font-weight:700;color:#111;}
+.stat-val.up{color:#e03131;}
+.stat-val.down{color:#1971c2;}
+
+/* 번호 그리드 */
+.num-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-bottom:16px;}
+.num-btn{aspect-ratio:1;border:none;border-radius:50%;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;background:#f0f0f0;color:#444;}
+.num-btn:hover{transform:scale(1.1);}
+.num-btn.selected{box-shadow:0 0 0 3px #f5c518, 0 0 8px 2px #f5c51866;transform:scale(1.15);}
+.num-btn.b1{background:#ffd43b;color:#333;}
+.num-btn.b2{background:#74c0fc;color:#333;}
+.num-btn.b3{background:#ff8787;color:#333;}
+.num-btn.b4{background:#a9e34b;color:#333;}
+.num-btn.b5{background:#e599f7;color:#333;}
+
+/* 핫/콜드 바 */
+.rank-list{display:flex;flex-direction:column;gap:7px;}
+.rank-item{display:flex;align-items:center;gap:10px;}
+.rank-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.rank-bar-wrap{flex:1;background:#f0f0f0;border-radius:4px;height:8px;overflow:hidden;}
+.rank-bar{height:100%;border-radius:4px;transition:width .4s;}
+.rank-cnt{font-size:12px;color:#888;width:36px;text-align:right;flex-shrink:0;}
+
+.hot .rank-bar{background:#e03131;}
+.cold .rank-bar{background:#1971c2;}
+
+/* 숨김 */
+.panel{display:none;}
+.panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <span class="badge">LOTTO 6/45</span>
+    <div class="title">통계 대시보드</div>
+    <div class="subtitle" id="data-subtitle">데이터 로딩 중...</div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">📈 회차 차트</button>
+    <button class="tab" onclick="switchTab(1)">🔢 번호 분석</button>
+    <button class="tab" onclick="switchTab(2)">🔥 핫/콜드</button>
+    <button class="tab" onclick="switchTab(3)">🔗 조합 탐색</button>
+  </div>
+
+  <!-- 패널 0: 회차 차트 -->
+  <div class="panel active" id="panel0">
+    <div class="card">
+      <div class="card-title">차트 항목 선택</div>
+      <div class="chart-sel">
+        <button class="csel-btn active" onclick="selectChart(0,this)">1등 당첨금</button>
+        <button class="csel-btn" onclick="selectChart(1,this)">1등 당첨자 수</button>
+        <button class="csel-btn" onclick="selectChart(2,this)">총 판매금액</button>
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" id="range-btn-0" onclick="setRange(0,this)">전체</button>
+        <button class="filter-btn" id="range-btn-100" onclick="setRange(100,this)">최근 100회</button>
+        <button class="filter-btn" id="range-btn-50" onclick="setRange(50,this)">최근 50회</button>
+        <button class="filter-btn" id="range-btn-20" onclick="setRange(20,this)">최근 20회</button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input id="custom-range" type="number" min="5" max="1226" placeholder="직접 입력"
+            style="width:90px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:12px;font-weight:600;color:#666;outline:none;text-align:center;"
+            onkeydown="if(event.key==='Enter') applyCustomRange()"
+          >
+          <button onclick="applyCustomRange()" style="padding:5px 10px;border:1.5px solid #1a73e8;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#e8f0fe;color:#1a73e8;">적용</button>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-label" id="s-max-label">-</div><div class="stat-val up" id="s-max">-</div></div>
+        <div class="stat-box"><div class="stat-label" id="s-avg-label">-</div><div class="stat-val" id="s-avg">-</div></div>
+        <div class="stat-box"><div class="stat-label" id="s-last-label">-</div><div class="stat-val" id="s-last">-</div></div>
+      </div>
+      <canvas id="mainChart" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- 패널 1: 번호 분석 -->
+  <div class="panel" id="panel1">
+    <!-- A: 전체 출현 횟수 막대그래프 -->
+    <div class="card">
+      <div class="card-title">전체 번호 출현 횟수 (번호 클릭 → 상세 분석)</div>
+      <canvas id="allNumChart" height="180"></canvas>
+    </div>
+    <!-- B: 선택 번호 상세 -->
+    <div class="card" id="numStatCard" style="display:none">
+      <div class="card-title" id="numStatTitle">번호 분석</div>
+      <div class="stat-row" id="numStats"></div>
+      <div class="card-title" style="margin-top:8px;margin-bottom:10px;color:#888;font-size:12px;">출현 간격 (회차마다 몇 회 만에 다시 나왔는지)</div>
+      <canvas id="numChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- 패널 2: 핫/콜드 -->
+  <div class="panel" id="panel2">
+    <div class="card">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setHotRange(0,this)">전체</button>
+        <button class="filter-btn" onclick="setHotRange(100,this)">최근 100회</button>
+        <button class="filter-btn" onclick="setHotRange(50,this)">최근 50회</button>
+        <button class="filter-btn" onclick="setHotRange(20,this)">최근 20회</button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input id="custom-hot-range" type="number" min="5" max="1226" placeholder="직접 입력"
+            style="width:90px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:12px;font-weight:600;color:#666;outline:none;text-align:center;"
+            onkeydown="if(event.key==='Enter') applyCustomHotRange()"
+          >
+          <button onclick="applyCustomHotRange()" style="padding:5px 10px;border:1.5px solid #1a73e8;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#e8f0fe;color:#1a73e8;">적용</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div class="card-title" style="color:#e03131">🔥 핫 번호 TOP 10</div>
+          <div class="rank-list hot" id="hotList"></div>
+        </div>
+        <div>
+          <div class="card-title" style="color:#1971c2">❄️ 콜드 번호 TOP 10</div>
+          <div class="rank-list cold" id="coldList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 패널 3: 조합 탐색 -->
+  <div class="panel" id="panel3">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="card-title" style="margin-bottom:0">번호 2~4개 선택 <span id="combo-count" style="font-size:12px;color:#1a73e8;font-weight:700;"></span></div>
+        <button onclick="resetCombo()" style="padding:5px 12px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#888;">초기화</button>
+      </div>
+      <div class="num-grid" id="comboGrid"></div>
+      <div id="comboResult" style="margin-top:16px;font-size:13px;color:#555;"></div>
+    </div>
+
+    <!-- 자주 나온 조합 TOP 10 -->
+    <div class="card">
+      <div class="card-title">자주 같이 나온 번호 조합 TOP 10</div>
+      <div class="chart-sel" style="margin-bottom:14px;">
+        <button class="csel-btn active" onclick="selectComboSize(2,this)">2개 조합</button>
+        <button class="csel-btn" onclick="selectComboSize(3,this)">3개 조합</button>
+        <button class="csel-btn" onclick="selectComboSize(4,this)">4개 조합</button>
+      </div>
+      <div id="topComboList" style="font-size:13px;color:#555;">데이터 로딩 중...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── 데이터 로드 ──────────────────────────────────────────
+let DATA = [];
+let chartMode = 0; // 0:당첨금 1:당첨자수 2:판매금
+let rangeN = 0;
+let hotRangeN = 0;
+let mainChartInst = null;
+let numChartInst = null;
+let selectedNum = null;
+let comboSelected = [];
+
+fetch('https://forseti0222.github.io/lotto645-widget/lotto_data.json')
+  .then(r => r.json())
+  .then(d => {
+    DATA = d.slice().reverse(); // 오래된순 정렬
+    const first = DATA[0], last = DATA[DATA.length-1];
+    document.getElementById('data-subtitle').textContent =
+      `${first.no}회 (${first.date}) ~ ${last.no}회 (${last.date}) 데이터 기반`;
+    renderMainChart();
+    renderAllNumChart(null);
+    renderHotCold();
+    renderComboGrid();
+    buildComboTop(2);
+  });
+
+// ── 탭 전환 ─────────────────────────────────────────────
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.panel').forEach((p,j) => p.classList.toggle('active', i===j));
+}
+
+// ── 패널 0: 회차 차트 ────────────────────────────────────
+function getSlice() {
+  return rangeN === 0 ? DATA : DATA.slice(-rangeN);
+}
+
+function selectChart(mode, btn) {
+  chartMode = mode;
+  document.querySelectorAll('.csel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMainChart();
+}
+
+function setRange(n, btn) {
+  rangeN = n;
+  document.querySelectorAll('#panel0 .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('custom-range').value = '';
+  renderMainChart();
+}
+
+function applyCustomRange() {
+  const val = parseInt(document.getElementById('custom-range').value);
+  if (!val || val < 5) return;
+  rangeN = Math.min(val, DATA.length);
+  document.querySelectorAll('#panel0 .filter-btn').forEach(b => b.classList.remove('active'));
+  renderMainChart();
+}
+
+function fmt억(v) {
+  if (v >= 1e8) return (v/1e8).toFixed(1) + '억';
+  if (v >= 1e4) return (v/1e4).toFixed(0) + '만';
+  return v.toLocaleString();
+}
+
+function renderMainChart() {
+  const slice = getSlice();
+  const labels = slice.map(d => d.no + '회');
+  let values, color, label;
+
+  if (chartMode === 0) {
+    values = slice.map(d => d.ranks[0].amt);
+    color = '#e03131'; label = '1등 당첨금 (원)';
+    document.getElementById('s-max-label').textContent = '최고 당첨금';
+    document.getElementById('s-avg-label').textContent = '평균 당첨금';
+    document.getElementById('s-last-label').textContent = '최근 1등 인원';
+    document.getElementById('s-max').textContent = fmt억(Math.max(...values));
+    document.getElementById('s-avg').textContent = fmt억(values.reduce((a,b)=>a+b,0)/values.length);
+    document.getElementById('s-last').textContent = slice[slice.length-1].ranks[0].co + '명';
+  } else if (chartMode === 1) {
+    values = slice.map(d => d.ranks[0].co);
+    color = '#1971c2'; label = '1등 당첨자 수 (명)';
+    document.getElementById('s-max-label').textContent = '최다 당첨자';
+    document.getElementById('s-avg-label').textContent = '평균 당첨자';
+    document.getElementById('s-last-label').textContent = '최근 당첨자';
+    document.getElementById('s-max').textContent = Math.max(...values) + '명';
+    document.getElementById('s-avg').textContent = (values.reduce((a,b)=>a+b,0)/values.length).toFixed(1) + '명';
+    document.getElementById('s-last').textContent = values[values.length-1] + '명';
+  } else {
+    values = slice.map(d => d.sell);
+    color = '#2f9e44'; label = '총 판매금액 (원)';
+    document.getElementById('s-max-label').textContent = '최고 판매금액';
+    document.getElementById('s-avg-label').textContent = '평균 판매금액';
+    document.getElementById('s-last-label').textContent = '최근 판매금액';
+    document.getElementById('s-max').textContent = fmt억(Math.max(...values));
+    document.getElementById('s-avg').textContent = fmt억(values.reduce((a,b)=>a+b,0)/values.length);
+    document.getElementById('s-last').textContent = fmt억(values[values.length-1]);
+  }
+
+  if (mainChartInst) mainChartInst.destroy();
+  const ctx = document.getElementById('mainChart').getContext('2d');
+  mainChartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data: values,
+        borderColor: color,
+        backgroundColor: color + '22',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+        y: {
+          ticks: {
+            font: { size: 11 },
+            callback: v => chartMode === 1 ? v + '명' : fmt억(v)
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.raw;
+              if (chartMode === 1) return v + '명';
+              return fmt억(v);
+            }
+          }
+        },
+        zoom: {
+          zoom: {
+            wheel: { enabled: true },
+            pinch: { enabled: true },
+            mode: 'x',
+          },
+          pan: {
+            enabled: true,
+            mode: 'x',
+          },
+          limits: {
+            x: { minRange: 5 }
+          }
+        }
+      }
+    }
+  });
+}
+
+// ── 패널 1: 번호 분석 ────────────────────────────────────
+let allNumChartInst = null;
+
+function numColor(n) {
+  if (n <= 9) return 'b1';
+  if (n <= 19) return 'b2';
+  if (n <= 29) return 'b3';
+  if (n <= 39) return 'b4';
+  return 'b5';
+}
+
+const NUM_COLORS = {
+  b1: '#ffd43b', b2: '#74c0fc', b3: '#ff8787', b4: '#a9e34b', b5: '#e599f7'
+};
+
+function renderAllNumChart(highlightNum) {
+  // 출현 횟수 집계
+  const cnt = {};
+  for (let i = 1; i <= 45; i++) cnt[i] = 0;
+  DATA.forEach(d => d.nums.forEach(n => cnt[n]++));
+
+  // 출현 많은 순 정렬
+  const sorted = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
+  const labels = sorted.map(([n]) => n + '번');
+  const values = sorted.map(([,c]) => c);
+  const colors = sorted.map(([n]) => {
+    const cls = numColor(Number(n));
+    const base = NUM_COLORS[cls];
+    return Number(n) === highlightNum ? '#1a73e8' : base;
+  });
+
+  if (allNumChartInst) allNumChartInst.destroy();
+  const ctx = document.getElementById('allNumChart').getContext('2d');
+  allNumChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      onClick: (e, els) => {
+        if (!els.length) return;
+        const idx = els[0].index;
+        const n = Number(sorted[idx][0]);
+        selectNum(n);
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.raw + '회' } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 10 } } },
+        y: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function selectNum(n) {
+  selectedNum = n;
+  renderAllNumChart(n); // 선택 번호 파란색으로 강조
+
+  const appears = DATA.filter(d => d.nums.includes(n));
+  const total = DATA.length;
+  const rate = (appears.length / total * 100).toFixed(1);
+  const latestNo = DATA[DATA.length-1].no;
+  const lastAppear = [...DATA].reverse().find(d => d.nums.includes(n));
+  const streak = latestNo - (lastAppear ? lastAppear.no : latestNo);
+
+  document.getElementById('numStatCard').style.display = 'block';
+  document.getElementById('numStatTitle').textContent = n + '번 상세 분석';
+  document.getElementById('numStats').innerHTML = `
+    <div class="stat-box"><div class="stat-label">총 출현</div><div class="stat-val">${appears.length}회</div></div>
+    <div class="stat-box"><div class="stat-label">출현율</div><div class="stat-val">${rate}%</div></div>
+    <div class="stat-box"><div class="stat-label">미출현 연속</div><div class="stat-val ${streak>15?'up':''}">${streak}회</div></div>
+  `;
+
+  // 출현 간격 차트: 각 출현 시점 사이의 회차 간격
+  const appearNos = DATA.filter(d => d.nums.includes(n)).map(d => d.no);
+  const intervals = [];
+  const intLabels = [];
+  for (let i = 1; i < appearNos.length; i++) {
+    intervals.push(appearNos[i] - appearNos[i-1]);
+    intLabels.push(appearNos[i] + '회');
+  }
+  const avgInt = (intervals.reduce((a,b)=>a+b,0)/intervals.length).toFixed(1);
+
+  if (numChartInst) numChartInst.destroy();
+  const ctx = document.getElementById('numChart').getContext('2d');
+  numChartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: intLabels,
+      datasets: [
+        {
+          type: 'bar',
+          label: '출현 간격',
+          data: intervals,
+          backgroundColor: intervals.map(v => v > avgInt*1.5 ? '#e0313155' : '#1a73e833'),
+          borderColor: intervals.map(v => v > avgInt*1.5 ? '#e03131' : '#1a73e8'),
+          borderWidth: 1,
+          borderRadius: 2,
+        },
+        {
+          type: 'line',
+          label: '평균 간격',
+          data: intervals.map(() => Number(avgInt)),
+          borderColor: '#f08c00',
+          borderWidth: 1.5,
+          borderDash: [4,3],
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true, labels: { font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ctx.raw + '회 간격' } }
+      },
+      scales: {
+        x: { ticks: { maxTicksLimit: 10, font: { size: 10 } } },
+        y: { ticks: { font: { size: 11 } }, title: { display: true, text: '간격 (회)', font: { size: 11 } } }
+      },
+      plugins: {
+        zoom: {
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+          pan: { enabled: true, mode: 'x' },
+          limits: { x: { minRange: 5 } }
+        }
+      }
+    }
+  });
+}
+
+// ── 패널 2: 핫/콜드 ─────────────────────────────────────
+function setHotRange(n, btn) {
+  hotRangeN = n;
+  document.querySelectorAll('#panel2 .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('custom-hot-range').value = '';
+  renderHotCold();
+}
+
+function applyCustomHotRange() {
+  const val = parseInt(document.getElementById('custom-hot-range').value);
+  if (!val || val < 5) return;
+  hotRangeN = Math.min(val, DATA.length);
+  document.querySelectorAll('#panel2 .filter-btn').forEach(b => b.classList.remove('active'));
+  renderHotCold();
+}
+
+function calcStreak(n) {
+  let streak = 0;
+  for (let i = DATA.length - 1; i >= 0; i--) {
+    if (DATA[i].nums.includes(n)) break;
+    streak++;
+  }
+  return streak;
+}
+
+function calcHotStreak(n) {
+  // 최근 연속 출현 횟수
+  let streak = 0;
+  for (let i = DATA.length - 1; i >= 0; i--) {
+    if (!DATA[i].nums.includes(n)) break;
+    streak++;
+  }
+  return streak;
+}
+
+function streakProb(streak) {
+  // streak 회 연속 안 나올 확률
+  return (Math.pow(39/45, streak) * 100).toFixed(1);
+}
+
+function renderHotCold() {
+  const slice = hotRangeN === 0 ? DATA : DATA.slice(-hotRangeN);
+  const cnt = {};
+  for (let i = 1; i <= 45; i++) cnt[i] = 0;
+  slice.forEach(d => d.nums.forEach(n => cnt[n]++));
+
+  const sorted = Object.entries(cnt).sort((a,b) => b[1]-a[1]);
+  const maxCnt = sorted[0][1];
+
+  const hotList = document.getElementById('hotList');
+  const coldList = document.getElementById('coldList');
+
+  hotList.innerHTML = sorted.slice(0,10).map(([n,c]) => {
+    const hotStreak = calcHotStreak(Number(n));
+    const streakColor = hotStreak >= 3 ? '#e03131' : hotStreak >= 2 ? '#f08c00' : '#aaa';
+    return `
+    <div class="rank-item" style="flex-wrap:wrap;gap:6px 10px;">
+      <div class="rank-num ${numColor(n)}">${n}</div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${c/maxCnt*100}%"></div></div>
+      <div class="rank-cnt">${c}회</div>
+      ${hotStreak > 0 ? `<div style="width:100%;padding-left:38px;font-size:11px;color:${streakColor};">
+        최근 ${hotStreak}회 연속 출현
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  coldList.innerHTML = sorted.slice(-10).reverse().map(([n,c]) => {
+    const streak = calcStreak(Number(n));
+    const prob = streakProb(streak);
+    const probColor = streak >= 20 ? '#e03131' : streak >= 10 ? '#f08c00' : '#aaa';
+    return `
+    <div class="rank-item" style="flex-wrap:wrap;gap:6px 10px;">
+      <div class="rank-num ${numColor(n)}">${n}</div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${c/maxCnt*100}%"></div></div>
+      <div class="rank-cnt">${c}회</div>
+      ${streak > 0 ? `<div style="width:100%;padding-left:38px;font-size:11px;color:${probColor};">
+        ${streak}회 연속 미출현 &nbsp;·&nbsp; 이럴 확률 ${prob}%
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── 패널 3: 조합 탐색 ────────────────────────────────────
+function renderComboGrid() {
+  const grid = document.getElementById('comboGrid');
+  grid.innerHTML = '';
+  for (let n = 1; n <= 45; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn ' + numColor(n);
+    btn.textContent = n;
+    btn.onclick = () => toggleCombo(n, btn);
+    grid.appendChild(btn);
+  }
+}
+
+// ── 자주 나온 조합 TOP 10 ────────────────────────────────
+let comboCache = {};
+let currentComboSize = 2;
+
+function getCombinations(arr, size) {
+  const result = [];
+  function pick(start, chosen) {
+    if (chosen.length === size) { result.push([...chosen]); return; }
+    for (let i = start; i < arr.length; i++) pick(i+1, [...chosen, arr[i]]);
+  }
+  pick(0, []);
+  return result;
+}
+
+function buildComboTop(size) {
+  if (comboCache[size]) { renderTopCombo(comboCache[size]); return; }
+  document.getElementById('topComboList').textContent = '계산 중...';
+  setTimeout(() => {
+    const cnt = {};
+    DATA.forEach(d => {
+      getCombinations(d.nums, size).forEach(combo => {
+        const key = combo.join('-');
+        cnt[key] = (cnt[key] || 0) + 1;
+      });
+    });
+    const top10 = Object.entries(cnt).sort((a,b) => b[1]-a[1]).slice(0,10);
+    comboCache[size] = top10;
+    renderTopCombo(top10);
+  }, 0);
+}
+
+function renderTopCombo(top10) {
+  const maxCnt = top10[0][1];
+  document.getElementById('topComboList').innerHTML = top10.map(([key, cnt], i) => {
+    const nums = key.split('-');
+    const balls = nums.map(n => `<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-size:12px;font-weight:700;background:${ballBg(Number(n))};color:#333;margin-right:3px;">${n}</span>`).join('');
+    const barW = (cnt / maxCnt * 100).toFixed(0);
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div style="width:18px;font-size:12px;color:#aaa;text-align:right;">${i+1}</div>
+      <div style="display:flex;align-items:center;">${balls}</div>
+      <div style="flex:1;background:#f0f0f0;border-radius:4px;height:8px;overflow:hidden;">
+        <div style="width:${barW}%;height:100%;border-radius:4px;background:#1a73e8;"></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#333;width:32px;text-align:right;">${cnt}회</div>
+    </div>`;
+  }).join('');
+}
+
+function ballBg(n) {
+  if (n <= 9) return '#ffd43b';
+  if (n <= 19) return '#74c0fc';
+  if (n <= 29) return '#ff8787';
+  if (n <= 39) return '#a9e34b';
+  return '#e599f7';
+}
+
+function selectComboSize(size, btn) {
+  currentComboSize = size;
+  document.querySelectorAll('#panel3 .csel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildComboTop(size);
+}
+
+function resetCombo() {
+  comboSelected = [];
+  document.querySelectorAll('#comboGrid .num-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('comboResult').innerHTML = '<span style="color:#aaa">번호를 2~4개 선택하세요</span>';
+  document.getElementById('combo-count').textContent = '';
+}
+
+function toggleCombo(n, btn) {
+  if (comboSelected.includes(n)) {
+    comboSelected = comboSelected.filter(x => x !== n);
+    btn.classList.remove('selected');
+  } else if (comboSelected.length < 4) {
+    comboSelected.push(n);
+    btn.classList.add('selected');
+  }
+  const cnt = document.getElementById('combo-count');
+  cnt.textContent = comboSelected.length > 0 ? `(${comboSelected.length}개 선택)` : '';
+  renderComboResult();
+}
+
+function renderComboResult() {
+  const el = document.getElementById('comboResult');
+  if (comboSelected.length < 2) {
+    el.innerHTML = '<span style="color:#aaa">번호를 2~3개 선택하세요</span>';
+    return;
+  }
+  const hits = DATA.filter(d => comboSelected.every(n => d.nums.includes(n)));
+  if (hits.length === 0) {
+    el.innerHTML = `<b>${comboSelected.join(', ')}번</b> — 함께 나온 적 없음`;
+    return;
+  }
+  el.innerHTML = `<b>${comboSelected.join(', ')}번</b> 함께 출현: <b>${hits.length}회</b><br><br>`
+    + hits.slice(-10).reverse().map(d =>
+        `<span style="display:inline-block;background:#f0f0f0;border-radius:6px;padding:3px 8px;margin:3px 2px;font-size:12px;">${d.no}회 (${d.date})</span>`
+      ).join('');
+}
+</script>
+</body>
+</html>

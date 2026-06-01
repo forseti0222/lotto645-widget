@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이월 기록 분석 (목업)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;padding:16px 16px 40px;}
+.wrap{max-width:720px;margin:0 auto;}
+
+.head{background:#fff;border-radius:16px;padding:20px 24px 18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.badge{display:inline-block;background:#fff3e0;color:#e65100;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:8px;letter-spacing:.5px;}
+.title{font-size:20px;font-weight:700;color:#111;margin-bottom:4px;}
+.subtitle{font-size:13px;color:#888;}
+
+.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.card-title{font-size:13px;font-weight:700;color:#555;margin-bottom:14px;}
+
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.stat-box{background:#f8f9fa;border-radius:10px;padding:12px;text-align:center;}
+.stat-label{font-size:11px;color:#999;margin-bottom:4px;}
+.stat-val{font-size:18px;font-weight:700;color:#111;}
+.stat-val.orange{color:#e65100;}
+.stat-val.red{color:#e03131;}
+
+/* 이월 타임라인 */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:12px;position:relative;}
+.tl-item:not(:last-child) .tl-line{position:absolute;left:13px;top:28px;width:2px;background:#e0e0e0;bottom:-8px;}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;z-index:1;}
+.tl-dot.rollover{background:#fff3e0;color:#e65100;border:2px solid #e65100;}
+.tl-dot.jackpot{background:#e03131;color:#fff;}
+.tl-content{flex:1;padding-bottom:16px;}
+.tl-round{font-size:12px;font-weight:700;color:#333;}
+.tl-date{font-size:11px;color:#aaa;margin-bottom:4px;}
+.tl-desc{font-size:12px;color:#666;}
+.tl-amt{font-size:14px;font-weight:700;color:#e03131;margin-top:2px;}
+
+/* 이월 배지 */
+.rollover-badge{display:inline-flex;gap:3px;margin-bottom:8px;}
+.rb{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.rb.on{background:#e65100;color:#fff;}
+.rb.off{background:#f0f0f0;color:#aaa;}
+
+/* 테이블 */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{background:#f8f9fa;padding:8px 10px;text-align:center;color:#888;font-weight:600;border-bottom:1px solid #eee;}
+.tbl td{padding:8px 10px;text-align:center;border-bottom:1px solid #f5f5f5;color:#333;}
+.tbl tr:hover td{background:#fafafa;}
+.tbl .amt{color:#e03131;font-weight:700;}
+.tbl .streak{display:inline-flex;gap:2px;}
+.streak-dot{width:8px;height:8px;border-radius:2px;background:#e65100;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <span class="badge">LOTTO 6/45</span>
+    <div class="title">이월 기록 분석</div>
+    <div class="subtitle" id="subtitle">데이터 로딩 중...</div>
+  </div>
+
+  <!-- 요약 통계 -->
+  <div class="card">
+    <div class="card-title">전체 이월 현황</div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-label">총 이월 횟수</div><div class="stat-val orange" id="s-total">-</div></div>
+      <div class="stat-box"><div class="stat-label">최대 연속 이월</div><div class="stat-val red" id="s-max">-</div></div>
+      <div class="stat-box"><div class="stat-label">이월 후 평균 당첨금</div><div class="stat-val" id="s-avg">-</div></div>
+    </div>
+    <canvas id="rolloverChart" height="180"></canvas>
+  </div>
+
+  <!-- 이월 발생 시 당첨금 비교 -->
+  <div class="card">
+    <div class="card-title">이월 횟수별 터진 당첨금</div>
+    <canvas id="streakAmtChart" height="180"></canvas>
+    <div style="margin-top:12px;font-size:12px;color:#888;">이월 많을수록 당첨금이 높아지는 경향이 있습니다</div>
+  </div>
+
+  <!-- 전체 이월 기록 테이블 -->
+  <div class="card">
+    <div class="card-title">이월 기록 전체 목록</div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>연속 이월</th>
+          <th>터진 회차</th>
+          <th>날짜</th>
+          <th>1등 당첨금</th>
+          <th>당첨자 수</th>
+        </tr>
+      </thead>
+      <tbody id="rolloverTable"></tbody>
+    </table>
+  </div>
+
+  <!-- 현재 이월 중? -->
+  <div class="card" id="currentCard" style="display:none">
+    <div class="card-title" style="color:#e65100">🔔 현재 이월 진행 중!</div>
+    <div id="currentDesc" style="font-size:14px;color:#333;line-height:1.7;"></div>
+  </div>
+
+</div>
+
+<script>
+let DATA = [];
+let rolloverChart = null;
+let streakAmtChart = null;
+
+fetch('https://forseti0222.github.io/lotto645-widget/lotto_data.json')
+  .then(r => r.json())
+  .then(d => {
+    DATA = d.slice().sort((a,b) => a.no - b.no);
+    const first = DATA[0], last = DATA[DATA.length-1];
+    document.getElementById('subtitle').textContent =
+      `${first.no}회 (${first.date}) ~ ${last.no}회 (${last.date}) 데이터 기반`;
+    analyze();
+  });
+
+function fmt억(v) {
+  if (v >= 1e8) return (v/1e8).toFixed(1) + '억';
+  if (v >= 1e4) return Math.round(v/1e4) + '만';
+  return v.toLocaleString();
+}
+
+function analyze() {
+  // 이월 그룹 추출
+  const groups = [];
+  let i = 0;
+  while (i < DATA.length) {
+    if (DATA[i].ranks[0].co === 0) {
+      const rollovers = [];
+      while (i < DATA.length && DATA[i].ranks[0].co === 0) {
+        rollovers.push(DATA[i]);
+        i++;
+      }
+      if (i < DATA.length) {
+        groups.push({ streak: rollovers.length, rounds: rollovers, jackpot: DATA[i] });
+      } else {
+        // 현재 이월 중
+        groups.push({ streak: rollovers.length, rounds: rollovers, jackpot: null });
+      }
+    }
+    i++;
+  }
+
+  const completed = groups.filter(g => g.jackpot);
+  const ongoing = groups.find(g => !g.jackpot);
+
+  // 요약
+  const totalRollover = completed.reduce((a,g) => a + g.streak, 0) + (ongoing ? ongoing.streak : 0);
+  const maxStreak = Math.max(...groups.map(g => g.streak));
+  const avgAmt = completed.reduce((a,g) => a + g.jackpot.ranks[0].amt * g.jackpot.ranks[0].co, 0) / completed.length;
+
+  document.getElementById('s-total').textContent = totalRollover + '회';
+  document.getElementById('s-max').textContent = maxStreak + '회 연속';
+  document.getElementById('s-avg').textContent = fmt억(avgAmt);
+
+  // 현재 이월 중 카드
+  if (ongoing) {
+    document.getElementById('currentCard').style.display = 'block';
+    const last = ongoing.rounds[ongoing.rounds.length-1];
+    document.getElementById('currentDesc').innerHTML =
+      `<b>${ongoing.streak}회 연속 이월 중</b><br>
+      마지막 이월 회차: ${last.no}회 (${last.date})<br>
+      과거 ${ongoing.streak}회 이월 후 평균 당첨금: <b style="color:#e03131">${fmt억(avgAmt)}</b>`;
+  }
+
+  // 당첨금 차트 (전 회차 1등 당첨금, 이월 회차 강조)
+  renderRolloverChart(completed);
+
+  // 이월 횟수별 당첨금 차트
+  renderStreakAmtChart(completed);
+
+  // 테이블
+  renderTable(completed);
+}
+
+function renderRolloverChart(completed) {
+  const jackpotNos = new Set(completed.map(g => g.jackpot.no));
+  const labels = DATA.map(d => d.no + '회');
+  const values = DATA.map(d => d.ranks[0].amt * d.ranks[0].co);
+  const colors = DATA.map(d => jackpotNos.has(d.no) ? '#e03131' : '#1a73e822');
+  const borders = DATA.map(d => jackpotNos.has(d.no) ? '#e03131' : '#1a73e8');
+
+  if (rolloverChart) rolloverChart.destroy();
+  rolloverChart = new Chart(document.getElementById('rolloverChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '1등 당첨금',
+        data: values,
+        backgroundColor: colors,
+        borderColor: borders,
+        borderWidth: 1,
+        borderRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => fmt억(ctx.raw) } }
+      },
+      scales: {
+        x: { ticks: { maxTicksLimit: 8, font: { size: 10 } } },
+        y: { ticks: { font: { size: 11 }, callback: v => fmt억(v) } }
+      }
+    }
+  });
+}
+
+function renderStreakAmtChart(completed) {
+  const byStreak = {};
+  completed.forEach(g => {
+    if (!byStreak[g.streak]) byStreak[g.streak] = [];
+    byStreak[g.streak].push(g.jackpot.ranks[0].amt * g.jackpot.ranks[0].co);
+  });
+
+  const keys = Object.keys(byStreak).sort((a,b)=>a-b);
+  const labels = keys.map(k => k + '회 이월');
+  const avgs = keys.map(k => byStreak[k].reduce((a,b)=>a+b,0)/byStreak[k].length);
+  const maxs = keys.map(k => Math.max(...byStreak[k]));
+  const mins = keys.map(k => Math.min(...byStreak[k]));
+
+  if (streakAmtChart) streakAmtChart.destroy();
+  streakAmtChart = new Chart(document.getElementById('streakAmtChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '최대',
+          data: maxs,
+          backgroundColor: '#e0313133',
+          borderColor: '#e03131',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+        {
+          label: '평균',
+          data: avgs,
+          backgroundColor: '#ff878788',
+          borderColor: '#ff8787',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+        {
+          label: '최소',
+          data: mins,
+          backgroundColor: '#ffd43b88',
+          borderColor: '#ffd43b',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { font: { size: 11 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt억(ctx.raw) } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 12 } } },
+        y: { ticks: { font: { size: 11 }, callback: v => fmt억(v) } }
+      }
+    }
+  });
+}
+
+function renderTable(completed) {
+  const tbody = document.getElementById('rolloverTable');
+  tbody.innerHTML = [...completed].reverse().map(g => {
+    const dots = Array(g.streak).fill('<div class="streak-dot"></div>').join('');
+    return `<tr>
+      <td><div class="streak" style="display:inline-flex;gap:3px;justify-content:center;">${dots}</div> ${g.streak}회</td>
+      <td>${g.jackpot.no}회</td>
+      <td>${g.jackpot.date}</td>
+      <td class="amt">${fmt억(g.jackpot.ranks[0].amt * g.jackpot.ranks[0].co)}</td>
+      <td>${g.jackpot.ranks[0].co}명</td>
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

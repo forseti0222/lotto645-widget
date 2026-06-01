@@ -1423,7 +1423,8 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
         picked.map(function(n){
           var hit=nums.indexOf(n)>=0;
           var isBonus=(n===bonus&&rank===2);
-          return '<div class="mb '+(hit?ballClass(n):'dim')+(isBonus?' bonus-ring':'')+'">'+n+'</div>';
+          var style=hit?'style="background:'+ballColor(n)+'"':'';
+          return '<div class="mb '+(hit?'':'dim')+(isBonus?' bonus-ring':'')+'" '+style+'>'+n+'</div>';
         }).join('')+'</div>';
     } else {
       res.innerHTML='<div class="result-rank" style="font-size:20px">😢 미당첨</div>'+
@@ -1431,7 +1432,8 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
         '<div class="match-balls">'+
         picked.map(function(n){
           var hit=nums.indexOf(n)>=0;
-          return '<div class="mb '+(hit?ballClass(n):'dim')+'">'+n+'</div>';
+          var style=hit?'style="background:'+ballColor(n)+'"':'';
+          return '<div class="mb '+(hit?'':'dim')+'" '+style+'>'+n+'</div>';
         }).join('')+'</div>';
     }
 

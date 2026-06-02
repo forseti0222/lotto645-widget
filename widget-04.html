@@ -21,6 +21,7 @@ body{background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Apple SD G
 .tabs{display:flex;gap:6px;margin-bottom:12px;}
 .tab{flex:1;padding:10px 0;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#888;box-shadow:0 1px 3px rgba(0,0,0,.07);transition:all .18s;}
 .tab.active{background:#1a73e8;color:#fff;}
+@media(max-width:480px){.tab{font-size:11px;padding:9px 0;}}
 
 /* 카드 */
 .card{background:#fff;border-radius:16px;padding:20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
@@ -66,6 +67,10 @@ body{background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Apple SD G
 .hot .rank-bar{background:#e03131;}
 .cold .rank-bar{background:#1971c2;}
 
+/* 핫/콜드 그리드 */
+.hot-cold-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.hot-cold-grid{grid-template-columns:1fr;}}
+
 /* 숨김 */
 .panel{display:none;}
 .panel.active{display:block;}
@@ -104,7 +109,7 @@ body{background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Apple SD G
           <button onclick="applyCustomHotRange()" style="padding:5px 10px;border:1.5px solid #1a73e8;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#e8f0fe;color:#1a73e8;">적용</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="hot-cold-grid">
         <div>
           <div class="card-title" style="color:#e03131">🔥 핫 번호 TOP 10</div>
           <div class="rank-list hot" id="hotList"></div>

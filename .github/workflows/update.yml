@@ -2,11 +2,8 @@ name: 로또 데이터 자동 갱신
 
 on:
   schedule:
-    - cron: '30 12 * * 6'
-  workflow_dispatch:
-
-permissions:
-  contents: write
+    - cron: '30 12 * * 6'  # 매주 토요일 21:30 KST (UTC+9)
+  workflow_dispatch:          # 수동 실행 버튼
 
 jobs:
   update:
@@ -30,6 +27,9 @@ jobs:
       - name: 데이터 수집
         run: python collect_lotto_final.py
 
+      - name: 판매점 데이터 수집
+        run: python collect_stores.py
+
       - name: 위젯 재생성
         run: python generate_widget.py
 
@@ -37,6 +37,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add lotto_data.json lotto_data.js widget-01.html
+          git add lotto_data.json lotto_data.js stores.json widget-01.html
           git diff --staged --quiet || git commit -m "자동 갱신: $(date '+%Y-%m-%d')"
           git push

@@ -1,14 +1,14 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>역대 로또 당첨번호 전체 보기</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#f5f5f7;display:flex;justify-content:center;padding:16px;}</style>
+<title>로또 6/45 회차별 당첨번호 조회</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32px;}</style>
 </head>
 <body>
 <div id="lotto645-widget">
-  <div class="lw-head"><span class="lw-badge">LOTTO 6/45</span><div class="lw-title">역대 로또 당첨번호 전체 보기</div></div>
+  <div class="lw-head"><span class="lw-badge">LOTTO 6/45</span><div class="lw-title">회차별 당첨번호 조회</div></div>
   <div class="lw-controls">
     <button class="lw-nav" data-act="prev">&#x2039;</button>
     <div class="lw-select-wrap"><select class="lw-select"></select><span class="lw-hoe">회</span></div>
@@ -22,7 +22,7 @@
   </div>
   <div id="lw-related" style="max-width:480px;margin:12px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
     <a href="https://archivebox.tistory.com/2" target="_blank" style="display:block;padding:11px;border:1px solid #e0e0e8;border-radius:10px;font-size:12px;font-weight:700;color:#444;text-decoration:none;text-align:center;background:#fafafa;">당첨금 실수령액 계산기</a>
-    <a href="https://archivebox.tistory.com/3" target="_blank" style="display:block;padding:11px;border:1px solid #e0e0e8;border-radius:10px;font-size:12px;font-weight:700;color:#444;text-decoration:none;text-align:center;background:#fafafa;">내 번호 당첨 확인</a>
+    <a href="#" target="_blank" style="display:block;padding:11px;border:1px solid #e0e0e8;border-radius:10px;font-size:12px;font-weight:700;color:#444;text-decoration:none;text-align:center;background:#fafafa;">내 번호 당첨 확인</a>
   </div>
   <p class="lw-foot">자료 출처: 동행복권 · 당첨금은 세전 기준입니다.</p>
 </div>
@@ -55,13 +55,13 @@
 #lotto645-widget .lw-table td:first-child{font-weight:800;}
 #lotto645-widget .lw-table td:last-child{font-weight:700;text-align:right;}
 #lotto645-widget .lw-table tr:last-child td{border-bottom:none;}
-#lotto645-widget .lw-sell{margin-top:16px;text-align:center;font-size:12.5px;color:var(--soft);}
+#lotto645-widget .lw-sell{margin-top:16px;font-size:12.5px;color:var(--soft);}
 #lotto645-widget .lw-sell b{color:var(--ink);font-weight:800;}
 #lotto645-widget .lw-foot{text-align:center;font-size:11px;color:#a0a0ad;margin:12px 0 0;}
 @media(max-width:430px){#lotto645-widget .lw-ball{width:40px;height:40px;font-size:17px;}#lotto645-widget .lw-card{padding:18px;}}
 </style>
 <script>
-  var LOTTO_DATA = [
+var LOTTO_DATA = [
     {no:1226, date:"2026-05-30", nums:[4, 6, 13, 17, 26, 28], bonus:41, sell:120259943000, ranks:[{co:10,amt:2815230113},{co:75,amt:62560670},{co:3557,amt:1319104},{co:171525,amt:50000},{co:2803464,amt:5000}]},
     {no:1225, date:"2026-05-23", nums:[8, 9, 19, 25, 41, 42], bonus:33, sell:120402887000, ranks:[{co:13,amt:2228133087},{co:76,amt:63521338},{co:3333,amt:1448432},{co:161090,amt:50000},{co:2705194,amt:5000}]},
     {no:1224, date:"2026-05-16", nums:[9, 18, 21, 27, 44, 45], bonus:28, sell:121110408000, ranks:[{co:12,amt:2414855250},{co:70,amt:68995865},{co:3373,amt:1431874},{co:166726,amt:50000},{co:2716244,amt:5000}]},
@@ -1327,4 +1327,3 @@
 </script>
 </body>
 </html>
-

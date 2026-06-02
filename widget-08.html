@@ -161,6 +161,7 @@ input[type=range]{width:100%;accent-color:#7c3aed;}
   </div>
 
   <button class="btn-run" id="btnRun" onclick="runAnalysis()">AI 분석 시작</button>
+  <div id="runError" style="display:none;text-align:center;color:#e03131;font-size:13px;font-weight:600;margin-top:8px;">고정 번호를 2~4개 선택해주세요.</div>
 
   <!-- 로딩 -->
   <div class="loading" id="loading">
@@ -272,9 +273,10 @@ fetch('https://forseti0222.github.io/lotto645-widget/lotto_data.json')
 async function runAnalysis() {
   if (DATA.length === 0) return;
   if (fixedNums.size < 2) {
-    alert('고정 번호를 2개 이상 선택해주세요.');
+    document.getElementById('runError').style.display = 'block';
     return;
   }
+  document.getElementById('runError').style.display = 'none';
 
   document.getElementById('btnRun').disabled = true;
   document.getElementById('resultWrap').classList.remove('show');

@@ -139,7 +139,7 @@ function renderMarkers(list) {
   list.forEach(s => {
     if (!s.shpLat || !s.shpLot) return;
     const pos = new kakao.maps.LatLng(parseFloat(s.shpLat), parseFloat(s.shpLot));
-    const isFirst = s.wnShpRnk === '1';
+    const isFirst = String(s.wnShpRnk) === '1';
     const marker = new kakao.maps.Marker({
       position: pos,
       map,
@@ -187,15 +187,15 @@ function renderList(list) {
     return;
   }
 
-  const cnt1 = list.filter(s => s.wnShpRnk === '1').length;
-  const cnt2 = list.filter(s => s.wnShpRnk === '2').length;
+  const cnt1 = list.filter(s => String(s.wnShpRnk) === '1').length;
+  const cnt2 = list.filter(s => String(s.wnShpRnk) === '2').length;
   summaryText.textContent = `총 ${list.length}개 판매점 (1등 ${cnt1}개 · 2등 ${cnt2}개)`;
   summary.style.display = '';
 
   el.innerHTML = list.map(s => {
     const [cls, label] = deviceLabel(s.atmtPsvYn);
-    const rankCls = s.wnShpRnk === '1' ? 'r1' : 'r2';
-    const rankLabel = s.wnShpRnk === '1' ? '1등' : '2등';
+    const rankCls = String(s.wnShpRnk) === '1' ? 'r1' : 'r2';
+    const rankLabel = String(s.wnShpRnk) === '1' ? '1등' : '2등';
     return `
     <div class="store-item" id="store-${s.ltShpId}">
       <div class="store-rank ${rankCls}">${rankLabel}</div>
@@ -213,7 +213,7 @@ function renderList(list) {
 
 function filterData() {
   if (currentRank === 'all') return currentData;
-  return currentData.filter(s => s.wnShpRnk === currentRank);
+  return currentData.filter(s => String(s.wnShpRnk) === currentRank);
 }
 
 async function loadAllStores() {

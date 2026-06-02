@@ -113,8 +113,11 @@ input[type=range]{width:100%;accent-color:#7c3aed;}
 .sg-label{font-size:11px;color:#999;margin-bottom:4px;}
 .sg-val{font-size:15px;font-weight:700;color:#7c3aed;}
 
-.btn-retry{width:100%;padding:12px;background:#f3e8ff;color:#7c3aed;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
-.btn-retry:hover{background:#ede9fe;}
+.btn-retry{width:100%;padding:16px;background:linear-gradient(90deg,#ff0000,#ff7700,#ffff00,#00cc00,#0066ff,#8800ff,#ff0000);background-size:300%;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px;box-shadow:0 4px 20px rgba(124,58,237,.5);transition:transform .15s;letter-spacing:.3px;font-size:18px;animation:btn-rainbow 5s linear infinite, btn-shine 5s ease-in-out infinite;}
+.btn-retry:hover{transform:translateY(-2px) scale(1.02);}
+.btn-retry:active{transform:translateY(0) scale(0.98);}
+@keyframes btn-rainbow{0%{background-position:0%}100%{background-position:300%}}
+@keyframes btn-shine{0%,100%{box-shadow:0 4px 20px rgba(255,100,0,.6),0 0 30px rgba(255,200,0,.3);}33%{box-shadow:0 4px 20px rgba(0,150,255,.6),0 0 30px rgba(0,255,200,.3);}66%{box-shadow:0 4px 20px rgba(200,0,255,.6),0 0 30px rgba(255,0,150,.3);}}
 
 /* 분석 기준 */
 .algo-list{display:flex;flex-direction:column;gap:8px;}

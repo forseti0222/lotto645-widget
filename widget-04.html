@@ -82,61 +82,14 @@ body{background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Apple SD G
 
   <!-- 탭 -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab(0)">📈 회차 차트</button>
-    <button class="tab" onclick="switchTab(1)">🔢 번호 분석</button>
-    <button class="tab" onclick="switchTab(2)">🔥 핫/콜드</button>
-    <button class="tab" onclick="switchTab(3)">🔗 조합 탐색</button>
-  </div>
-
-  <!-- 패널 0: 회차 차트 -->
-  <div class="panel active" id="panel0">
-    <div class="card">
-      <div class="card-title">차트 항목 선택</div>
-      <div class="chart-sel">
-        <button class="csel-btn active" onclick="selectChart(0,this)">1등 당첨금</button>
-        <button class="csel-btn" onclick="selectChart(1,this)">1등 당첨자 수</button>
-        <button class="csel-btn" onclick="selectChart(2,this)">총 판매금액</button>
-      </div>
-      <div class="filter-row">
-        <button class="filter-btn active" id="range-btn-0" onclick="setRange(0,this)">전체</button>
-        <button class="filter-btn" id="range-btn-100" onclick="setRange(100,this)">최근 100회</button>
-        <button class="filter-btn" id="range-btn-50" onclick="setRange(50,this)">최근 50회</button>
-        <button class="filter-btn" id="range-btn-20" onclick="setRange(20,this)">최근 20회</button>
-        <div style="display:flex;align-items:center;gap:4px;">
-          <input id="custom-range" type="number" min="5" max="1226" placeholder="직접 입력"
-            style="width:90px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:12px;font-weight:600;color:#666;outline:none;text-align:center;"
-            onkeydown="if(event.key==='Enter') applyCustomRange()"
-          >
-          <button onclick="applyCustomRange()" style="padding:5px 10px;border:1.5px solid #1a73e8;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#e8f0fe;color:#1a73e8;">적용</button>
-        </div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-box"><div class="stat-label" id="s-max-label">-</div><div class="stat-val up" id="s-max">-</div></div>
-        <div class="stat-box"><div class="stat-label" id="s-avg-label">-</div><div class="stat-val" id="s-avg">-</div></div>
-        <div class="stat-box"><div class="stat-label" id="s-last-label">-</div><div class="stat-val" id="s-last">-</div></div>
-      </div>
-      <canvas id="mainChart" height="220"></canvas>
-    </div>
-  </div>
-
-  <!-- 패널 1: 번호 분석 -->
-  <div class="panel" id="panel1">
-    <!-- A: 전체 출현 횟수 막대그래프 -->
-    <div class="card">
-      <div class="card-title">전체 번호 출현 횟수 (번호 클릭 → 상세 분석)</div>
-      <canvas id="allNumChart" height="180"></canvas>
-    </div>
-    <!-- B: 선택 번호 상세 -->
-    <div class="card" id="numStatCard" style="display:none">
-      <div class="card-title" id="numStatTitle">번호 분석</div>
-      <div class="stat-row" id="numStats"></div>
-      <div class="card-title" style="margin-top:8px;margin-bottom:10px;color:#888;font-size:12px;">출현 간격 (회차마다 몇 회 만에 다시 나왔는지)</div>
-      <canvas id="numChart" height="180"></canvas>
-    </div>
+    <button class="tab active" onclick="switchTab(0)">🔥 핫/콜드</button>
+    <button class="tab" onclick="switchTab(1)">🔗 조합 탐색</button>
+    <button class="tab" onclick="switchTab(2)">🔢 번호 분석</button>
+    <button class="tab" onclick="switchTab(3)">📈 회차 차트</button>
   </div>
 
   <!-- 패널 2: 핫/콜드 -->
-  <div class="panel" id="panel2">
+  <div class="panel active" id="panel2">
     <div class="card">
       <div class="filter-row">
         <button class="filter-btn active" onclick="setHotRange(0,this)">전체</button>
@@ -184,6 +137,53 @@ body{background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Apple SD G
         <button class="csel-btn" onclick="selectComboSize(4,this)">4개 조합</button>
       </div>
       <div id="topComboList" style="font-size:13px;color:#555;">데이터 로딩 중...</div>
+    </div>
+  </div>
+
+  <!-- 패널 1: 번호 분석 -->
+  <div class="panel" id="panel1">
+    <!-- A: 전체 출현 횟수 막대그래프 -->
+    <div class="card">
+      <div class="card-title">전체 번호 출현 횟수 (번호 클릭 → 상세 분석)</div>
+      <canvas id="allNumChart" height="180"></canvas>
+    </div>
+    <!-- B: 선택 번호 상세 -->
+    <div class="card" id="numStatCard" style="display:none">
+      <div class="card-title" id="numStatTitle">번호 분석</div>
+      <div class="stat-row" id="numStats"></div>
+      <div class="card-title" style="margin-top:8px;margin-bottom:10px;color:#888;font-size:12px;">출현 간격 (회차마다 몇 회 만에 다시 나왔는지)</div>
+      <canvas id="numChart" height="180"></canvas>
+    </div>
+  </div>
+
+  <!-- 패널 0: 회차 차트 -->
+  <div class="panel" id="panel0">
+    <div class="card">
+      <div class="card-title">차트 항목 선택</div>
+      <div class="chart-sel">
+        <button class="csel-btn active" onclick="selectChart(0,this)">1등 당첨금</button>
+        <button class="csel-btn" onclick="selectChart(1,this)">1등 당첨자 수</button>
+        <button class="csel-btn" onclick="selectChart(2,this)">총 판매금액</button>
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" id="range-btn-0" onclick="setRange(0,this)">전체</button>
+        <button class="filter-btn" id="range-btn-100" onclick="setRange(100,this)">최근 100회</button>
+        <button class="filter-btn" id="range-btn-50" onclick="setRange(50,this)">최근 50회</button>
+        <button class="filter-btn" id="range-btn-20" onclick="setRange(20,this)">최근 20회</button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input id="custom-range" type="number" min="5" max="1226" placeholder="직접 입력"
+            style="width:90px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:20px;font-size:12px;font-weight:600;color:#666;outline:none;text-align:center;"
+            onkeydown="if(event.key==='Enter') applyCustomRange()"
+          >
+          <button onclick="applyCustomRange()" style="padding:5px 10px;border:1.5px solid #1a73e8;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#e8f0fe;color:#1a73e8;">적용</button>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-label" id="s-max-label">-</div><div class="stat-val up" id="s-max">-</div></div>
+        <div class="stat-box"><div class="stat-label" id="s-avg-label">-</div><div class="stat-val" id="s-avg">-</div></div>
+        <div class="stat-box"><div class="stat-label" id="s-last-label">-</div><div class="stat-val" id="s-last">-</div></div>
+      </div>
+      <canvas id="mainChart" height="220"></canvas>
     </div>
   </div>
 
@@ -671,7 +671,7 @@ function toggleCombo(n, btn) {
 function renderComboResult() {
   const el = document.getElementById('comboResult');
   if (comboSelected.length < 2) {
-    el.innerHTML = '<span style="color:#aaa">번호를 2~3개 선택하세요</span>';
+    el.innerHTML = '';
     return;
   }
   const hits = DATA.filter(d => comboSelected.every(n => d.nums.includes(n)));
@@ -679,10 +679,30 @@ function renderComboResult() {
     el.innerHTML = `<b>${comboSelected.join(', ')}번</b> — 함께 나온 적 없음`;
     return;
   }
+  // 함께 나온 번호 빈도 집계
+  const coCount = {};
+  hits.forEach(d => d.nums.forEach(n => {
+    if (!comboSelected.includes(n)) coCount[n] = (coCount[n] || 0) + 1;
+  }));
+
+  // 단 한 번도 안 나온 번호
+  const neverNums = [];
+  for (let n = 1; n <= 45; n++) {
+    if (!comboSelected.includes(n) && !coCount[n]) neverNums.push(n);
+  }
+
+  const neverHtml = neverNums.length > 0
+    ? `<div style="margin-top:14px;padding:12px;background:#fff5f5;border-radius:10px;border:1px solid #ffc9c9;">
+        <div style="font-size:11px;font-weight:700;color:#c92a2a;margin-bottom:8px;">함께 단 한 번도 나온 적 없는 번호</div>
+        <div>${neverNums.map(n => `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;background:${ballBg(n)};color:#333;margin:2px;">${n}</span>`).join('')}</div>
+      </div>`
+    : `<div style="margin-top:14px;font-size:12px;color:#aaa;">함께 안 나온 번호 없음 (모든 번호와 최소 1회 공존)</div>`;
+
   el.innerHTML = `<b>${comboSelected.join(', ')}번</b> 함께 출현: <b>${hits.length}회</b><br><br>`
     + hits.slice(-10).reverse().map(d =>
         `<span style="display:inline-block;background:#f0f0f0;border-radius:6px;padding:3px 8px;margin:3px 2px;font-size:12px;">${d.no}회 (${d.date})</span>`
-      ).join('');
+      ).join('')
+    + neverHtml;
 }
 </script>
 </body>

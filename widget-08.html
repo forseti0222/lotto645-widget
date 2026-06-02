@@ -87,6 +87,8 @@ input[type=range]{width:100%;accent-color:#7c3aed;}
 .combo-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .combo-rank{font-size:11px;font-weight:700;color:#7c3aed;}
 .combo-score{font-size:11px;color:#aaa;}
+.rainbow{background:linear-gradient(90deg,#ff0000,#ff7700,#ffff00,#00ff00,#0000ff,#8b00ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:18px;animation:rainbow-move 1s linear infinite;background-size:200%;}
+@keyframes rainbow-move{0%{background-position:0%}100%{background-position:200%}}
 
 .balls{display:flex;gap:6px;margin-bottom:10px;}
 .ball{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
@@ -522,6 +524,7 @@ function selectDiverse(scored, n) {
 // ── 결과 렌더링 ──
 
 function scoreGrade(score) {
+  if (score >= 85) return '<span class="rainbow">⭐⭐⭐⭐⭐</span>';
   if (score >= 79) return '⭐⭐⭐⭐⭐';
   if (score >= 73) return '⭐⭐⭐⭐';
   if (score >= 68) return '⭐⭐⭐';

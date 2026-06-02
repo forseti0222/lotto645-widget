@@ -302,12 +302,12 @@ async function runAnalysis() {
   await tick();
   const structStats = calcStructStats();
 
-  setStep('최적 조합 탐색 중...');
+  setStep('번호 조합 생성 중...');
   await tick();
 
-  const candidates = generateCandidates(8000);
+  const candidates = generateCandidates(5);
   const scored = scoreCandidates(candidates, freq, recentFreq, pairMatrix, sumStats, structStats, weights);
-  const top5 = selectDiverse(scored, 5);
+  const top5 = scored;
 
 
   renderResults(top5, freq, recentFreq, sumStats);
@@ -521,6 +521,13 @@ function selectDiverse(scored, n) {
 
 // ── 결과 렌더링 ──
 
+function scoreGrade(score) {
+  if (score >= 79) return '⭐⭐⭐⭐⭐';
+  if (score >= 73) return '⭐⭐⭐⭐';
+  if (score >= 68) return '⭐⭐⭐';
+  return '⭐⭐';
+}
+
 function renderResults(top5, freq, recentFreq, sumStats) {
   const list = document.getElementById('comboList');
   list.innerHTML = top5.map((item, idx) => {
@@ -554,7 +561,7 @@ function renderResults(top5, freq, recentFreq, sumStats) {
     return `<div class="combo-card">
       <div class="combo-top">
         <span class="combo-rank">추천 ${idx+1}</span>
-        <span class="combo-score">종합점수 ${score.toFixed(1)}pt</span>
+        <span class="combo-score">${scoreGrade(score)}</span>
       </div>
       <div class="balls">${balls}</div>
       <div class="reason">${tags}</div>

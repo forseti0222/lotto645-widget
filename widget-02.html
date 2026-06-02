@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>당첨금 실수령액 계산기</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32px;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;}</style>
+</head>
+<body>
+<div id="lotto-tax-wrap">
+  <div class="lt-head">
+    <span class="lt-badge">LOTTO 6/45</span>
+    <div class="lt-title">당첨금 실수령액 계산기</div>
+    <div class="lt-subtitle">세금 공제 후 실제로 받는 금액을 계산해드립니다</div>
+  </div>
+
+  <div class="lt-body">
+    <div class="lt-rank-grid">
+      <button class="lt-rank-btn on" data-rank="1">1등<span class="lt-prize" id="lt-prize-1"></span></button>
+      <button class="lt-rank-btn" data-rank="2">2등<span class="lt-prize" id="lt-prize-2"></span></button>
+      <button class="lt-rank-btn" data-rank="3">3등<span class="lt-prize" id="lt-prize-3"></span></button>
+      <button class="lt-rank-btn" data-rank="4">4등<span class="lt-prize">5만원</span></button>
+      <button class="lt-rank-btn" data-rank="5">5등<span class="lt-prize">5천원</span></button>
+    </div>
+
+    <div class="lt-input-row">
+      <label>당첨금 직접 입력</label>
+      <div class="lt-input-wrap">
+        <input type="text" id="lt-prize-input" inputmode="numeric" />
+        <span>원</span>
+      </div>
+    </div>
+
+    <div class="lt-result-box">
+      <div class="lt-result-label">세후 실수령액</div>
+      <div class="lt-result-main" id="lt-net-amount">—</div>
+      <div class="lt-result-rate" id="lt-rate-badge"></div>
+      <div class="lt-summary-grid" id="lt-summary-grid"></div>
+    </div>
+
+    <div class="lt-tax-card" id="lt-tax-card"></div>
+    <div class="lt-breakdown" id="lt-breakdown"></div>
+    <div class="lt-note" id="lt-tax-note"></div>
+
+    <div class="lt-links">
+      <div class="lt-links-label">LOTTO ARCHIVE 다른 글도 확인해보세요</div>
+      <div class="lt-links-grid">
+        <a href="https://archivebox.tistory.com/1" target="_blank" class="lt-link-btn">역대 당첨번호 조회</a>
+        <a href="https://archivebox.tistory.com/3" target="_blank" class="lt-link-btn">내 번호 당첨 확인</a>
+        <a href="https://archivebox.tistory.com/4" target="_blank" class="lt-link-btn">통계 대시보드</a>
+        <a href="https://archivebox.tistory.com/7" target="_blank" class="lt-link-btn">AI 번호 추천기</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+#lotto-tax-wrap{max-width:480px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;box-sizing:border-box;}
+#lotto-tax-wrap *{box-sizing:border-box;}
+#lotto-tax-wrap .lt-head{background:#1a1a2e;border-radius:18px 18px 0 0;padding:20px 24px 18px;color:#fff;}
+#lotto-tax-wrap .lt-badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:2px;color:#ffd84d;border:1px solid rgba(255,216,77,.5);border-radius:20px;padding:3px 12px;margin-bottom:10px;}
+#lotto-tax-wrap .lt-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+#lotto-tax-wrap .lt-subtitle{font-size:13px;color:rgba(255,255,255,.6);}
+#lotto-tax-wrap .lt-body{background:#fff;border:1px solid #ececf1;border-top:none;border-radius:0 0 18px 18px;padding:24px;}
+#lotto-tax-wrap .lt-rank-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:20px;}
+#lotto-tax-wrap .lt-rank-btn{padding:10px 4px;border:1px solid #e0e0e8;border-radius:10px;background:#f8f8fc;color:#6b6b7b;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px;}
+#lotto-tax-wrap .lt-rank-btn.on{background:#1a1a2e;color:#fff;border-color:#1a1a2e;}
+#lotto-tax-wrap .lt-prize{font-size:10px;font-weight:400;opacity:.75;}
+#lotto-tax-wrap .lt-input-row{margin-bottom:20px;}
+#lotto-tax-wrap .lt-input-row label{display:block;font-size:12px;color:#888;margin-bottom:6px;font-weight:600;}
+#lotto-tax-wrap .lt-input-wrap{display:flex;align-items:center;gap:8px;}
+#lotto-tax-wrap .lt-input-wrap input{flex:1;padding:10px 14px;border:1px solid #e0e0e8;border-radius:10px;font-size:15px;font-weight:700;color:#1a1a2e;outline:none;}
+#lotto-tax-wrap .lt-input-wrap input:focus{border-color:#1a1a2e;}
+#lotto-tax-wrap .lt-input-wrap span{font-size:14px;color:#888;flex-shrink:0;}
+#lotto-tax-wrap .lt-result-box{background:#f4f4fa;border-radius:14px;padding:20px;margin-bottom:20px;display:flex;flex-direction:column;align-items:center;text-align:center;}
+#lotto-tax-wrap .lt-result-label{font-size:12px;color:#888;font-weight:600;margin-bottom:6px;}
+#lotto-tax-wrap .lt-result-main{font-size:32px;font-weight:800;color:#1a1a2e;margin-bottom:6px;}
+#lotto-tax-wrap .lt-result-rate{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:700;}
+#lotto-tax-wrap .lt-result-rate.high{background:#fce8e8;color:#c0392b;}
+#lotto-tax-wrap .lt-result-rate.low{background:#fff3cd;color:#9a6b00;}
+#lotto-tax-wrap .lt-result-rate.none{background:#e9f7ef;color:#1a7a45;}
+#lotto-tax-wrap .lt-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin-top:14px;}
+#lotto-tax-wrap .lt-summary-item{background:rgba(0,0,0,.04);border-radius:10px;padding:10px 8px;text-align:center;}
+#lotto-tax-wrap .lt-summary-label{font-size:10px;color:#888;margin-bottom:4px;font-weight:600;}
+#lotto-tax-wrap .lt-summary-val{font-size:13px;font-weight:800;color:#1a1a2e;}
+#lotto-tax-wrap .lt-summary-val.minus{color:#c0392b;}
+#lotto-tax-wrap .lt-summary-val.plus{color:#1a7a45;}
+#lotto-tax-wrap .lt-tax-card{margin-bottom:16px;}
+#lotto-tax-wrap .lt-tax-card-title{font-size:11px;color:#888;font-weight:700;margin-bottom:8px;letter-spacing:.5px;}
+#lotto-tax-wrap .lt-tax-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+#lotto-tax-wrap .lt-tc-item{border-radius:12px;padding:12px 10px;text-align:center;}
+#lotto-tax-wrap .lt-tc-label{font-size:10px;font-weight:600;margin-bottom:5px;}
+#lotto-tax-wrap .lt-tc-val{font-size:16px;font-weight:800;}
+#lotto-tax-wrap .lt-tc-item.none{background:#e9f7ef;} #lotto-tax-wrap .lt-tc-item.none .lt-tc-label{color:#1a7a45;} #lotto-tax-wrap .lt-tc-item.none .lt-tc-val{color:#1a7a45;}
+#lotto-tax-wrap .lt-tc-item.income{background:#fce8e8;} #lotto-tax-wrap .lt-tc-item.income .lt-tc-label{color:#c0392b;} #lotto-tax-wrap .lt-tc-item.income .lt-tc-val{color:#c0392b;}
+#lotto-tax-wrap .lt-tc-item.local{background:#fff0e0;} #lotto-tax-wrap .lt-tc-item.local .lt-tc-label{color:#b35900;} #lotto-tax-wrap .lt-tc-item.local .lt-tc-val{color:#b35900;}
+#lotto-tax-wrap .lt-tc-item.total{background:#1a1a2e;} #lotto-tax-wrap .lt-tc-item.total .lt-tc-label{color:rgba(255,255,255,.6);} #lotto-tax-wrap .lt-tc-item.total .lt-tc-val{color:#ffd84d;}
+#lotto-tax-wrap .lt-breakdown{border:1px solid #ececf1;border-radius:12px;padding:16px;margin-bottom:14px;}
+#lotto-tax-wrap .lt-breakdown:empty,#lotto-tax-wrap .lt-note:empty{display:none;}
+#lotto-tax-wrap .lt-bd-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13px;border-bottom:1px solid #f4f4f4;}
+#lotto-tax-wrap .lt-bd-row:last-child{border-bottom:none;}
+#lotto-tax-wrap .lt-bd-label{color:#6b6b7b;}
+#lotto-tax-wrap .lt-bd-val{font-weight:700;color:#1a1a2e;}
+#lotto-tax-wrap .lt-bd-val.minus{color:#c0392b;}
+#lotto-tax-wrap .lt-bd-val.plus{color:#1a7a45;}
+#lotto-tax-wrap .lt-bd-divider{border:none;border-top:1px dashed #e0e0e8;margin:4px 0;}
+#lotto-tax-wrap .lt-note{font-size:11.5px;color:#999;line-height:1.7;margin-bottom:20px;padding:12px 14px;background:#fafafa;border-radius:10px;}
+#lotto-tax-wrap .lt-links{border-top:1px solid #ececf1;padding-top:18px;}
+#lotto-tax-wrap .lt-links-label{font-size:12px;color:#999;margin-bottom:10px;font-weight:600;}
+#lotto-tax-wrap .lt-links-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+#lotto-tax-wrap .lt-link-btn{display:block;padding:10px;border:1px solid #e0e0e8;border-radius:10px;font-size:12px;font-weight:700;color:#444;text-decoration:none;text-align:center;background:#fafafa;transition:background .15s;}
+#lotto-tax-wrap .lt-link-btn:hover{background:#f0f0f8;}
+@media(max-width:420px){
+  #lotto-tax-wrap .lt-result-main{font-size:26px;}
+  #lotto-tax-wrap .lt-body{padding:18px;}
+}
+</style>
+
+<script>
+// ↓ generate_widget.py 실행 시 자동 갱신
+var LATEST_1ST_AMT = 2815230113;
+var LATEST_2ND_AMT = 62560670;
+var LATEST_3RD_AMT = 1319104;
+
+(function(){
+  var RANKS={
+    1:{base:LATEST_1ST_AMT},2:{base:LATEST_2ND_AMT},
+    3:{base:LATEST_3RD_AMT},4:{base:50000},5:{base:5000}
+  };
+
+  function fmt(n){return Math.round(n).toLocaleString('ko-KR')+'원';}
+  function fmtInput(n){return Math.round(n).toLocaleString('ko-KR');}
+  function fmtShortBtn(n){
+    n=Math.round(n);
+    if(n>=100000000){var uk=Math.floor(n/100000000),man=Math.floor((n%100000000)/10000);return man>0?'약 '+uk+'억 '+man.toLocaleString('ko-KR')+'만':'약 '+uk+'억+';}
+    if(n>=10000)return '약 '+Math.round(n/10000).toLocaleString('ko-KR')+'만';
+    return n.toLocaleString('ko-KR')+'원';
+  }
+  [1,2,3].forEach(function(r){
+    var el=document.getElementById('lt-prize-'+r);
+    if(el)el.textContent=fmtShortBtn(RANKS[r].base);
+  });
+  function fmtShort(n){
+    n=Math.round(n);
+    if(n>=100000000){
+      var uk=Math.floor(n/100000000);
+      var man=Math.floor((n%100000000)/10000);
+      return man>0?uk+'억 '+man.toLocaleString('ko-KR')+'만원':uk+'억원';
+    }
+    if(n>=10000)return Math.round(n/10000).toLocaleString('ko-KR')+'만원';
+    return n.toLocaleString('ko-KR')+'원';
+  }
+
+  function calcTax(amt){
+    if(amt<200000) return {type:'none',tax:0,local:0,net:amt,rate:0};
+    if(amt<=300000000){
+      var t=Math.round(amt*0.22),l=Math.round(amt*0.022);
+      return {type:'low',tax:t,local:l,net:amt-t-l,rate:22};
+    }
+    var t=Math.round(amt*0.33),l=Math.round(amt*0.033);
+    return {type:'high',tax:t,local:l,net:amt-t-l,rate:33};
+  }
+
+  function render(){
+    var amt=parseInt(document.getElementById('lt-prize-input').value.replace(/,/g,''))||0;
+    var r=calcTax(amt);
+    var netEl=document.getElementById('lt-net-amount');
+    var rateEl=document.getElementById('lt-rate-badge');
+    var bdEl=document.getElementById('lt-breakdown');
+    var noteEl=document.getElementById('lt-tax-note');
+
+    netEl.textContent=amt>0?fmtShort(r.net):'—';
+
+    var tcEl=document.getElementById('lt-tax-card');
+    if(amt>0 && r.type!=='none'){
+      var iRate=r.rate, lRate=r.rate===22?2.2:3.3, tRate=r.rate===22?24.2:36.3;
+      tcEl.innerHTML='<div class="lt-tax-card-title">적용 세율</div><div class="lt-tax-card-grid">'+
+        '<div class="lt-tc-item income"><div class="lt-tc-label">소득세</div><div class="lt-tc-val">'+iRate+'%</div></div>'+
+        '<div class="lt-tc-item local"><div class="lt-tc-label">지방소득세</div><div class="lt-tc-val">'+lRate+'%</div></div>'+
+        '<div class="lt-tc-item total"><div class="lt-tc-label">합계 세율</div><div class="lt-tc-val">'+tRate+'%</div></div>'+
+        '</div>';
+    } else if(r.type==='none'){
+      tcEl.innerHTML='<div class="lt-tax-card-title">적용 세율</div><div class="lt-tax-card-grid">'+
+        '<div class="lt-tc-item none" style="grid-column:1/-1"><div class="lt-tc-label">과세 구간</div><div class="lt-tc-val">비과세 (200만원 미만)</div></div>'+
+        '</div>';
+    } else { tcEl.innerHTML=''; }
+
+    var sgEl=document.getElementById('lt-summary-grid');
+    if(amt>0 && r.type!=='none'){
+      sgEl.innerHTML=
+        '<div class="lt-summary-item"><div class="lt-summary-label">세전 당첨금</div><div class="lt-summary-val">'+fmtShort(amt)+'</div></div>'+
+        '<div class="lt-summary-item"><div class="lt-summary-label">납부 세금</div><div class="lt-summary-val minus">-'+fmtShort(r.tax+r.local)+'</div></div>'+
+        '<div class="lt-summary-item"><div class="lt-summary-label">실수령액</div><div class="lt-summary-val plus">'+fmtShort(r.net)+'</div></div>';
+    } else { sgEl.innerHTML=''; }
+
+    if(r.type==='none'){
+      rateEl.className='lt-result-rate none';
+      rateEl.textContent='비과세 — 전액 수령';
+      bdEl.innerHTML='<div class="lt-bd-row"><span class="lt-bd-label">과세 대상 없음 (200만원 미만)</span><span class="lt-bd-val plus">전액 수령</span></div>';
+      noteEl.textContent='200만원 미만 당첨금은 비과세입니다. 4등(5만원)·5등(5천원)은 세금 없이 전액 받으실 수 있습니다.';
+    } else if(r.type==='low'){
+      rateEl.className='lt-result-rate low';
+      rateEl.textContent='세율 24.2% 적용';
+      bdEl.innerHTML=
+        '<div class="lt-bd-row"><span class="lt-bd-label">세전 당첨금</span><span class="lt-bd-val">'+fmt(amt)+'</span></div>'+
+        '<hr class="lt-bd-divider">'+
+        '<div class="lt-bd-row"><span class="lt-bd-label">소득세 (22%)</span><span class="lt-bd-val minus">- '+fmt(r.tax)+'</span></div>'+
+        '<div class="lt-bd-row"><span class="lt-bd-label">지방소득세 (2.2%)</span><span class="lt-bd-val minus">- '+fmt(r.local)+'</span></div>'+
+        '<hr class="lt-bd-divider">'+
+        '<div class="lt-bd-row"><span class="lt-bd-label" style="font-weight:700">실수령액</span><span class="lt-bd-val plus" style="font-size:15px">'+fmt(r.net)+'</span></div>';
+      noteEl.textContent='200만원 이상 3억원 이하 당첨금은 소득세 22% + 지방소득세 2.2% = 총 24.2%가 원천징수됩니다. 분리과세로 종합소득세 신고 대상이 아닙니다.';
+    } else {
+      rateEl.className='lt-result-rate high';
+      rateEl.textContent='세율 36.3% 적용';
+      bdEl.innerHTML=
+        '<div class="lt-bd-row"><span class="lt-bd-label">세전 당첨금</span><span class="lt-bd-val">'+fmt(amt)+'</span></div>'+
+        '<hr class="lt-bd-divider">'+
+        '<div class="lt-bd-row"><span class="lt-bd-label">소득세 (33%)</span><span class="lt-bd-val minus">- '+fmt(r.tax)+'</span></div>'+
+        '<div class="lt-bd-row"><span class="lt-bd-label">지방소득세 (3.3%)</span><span class="lt-bd-val minus">- '+fmt(r.local)+'</span></div>'+
+        '<hr class="lt-bd-divider">'+
+        '<div class="lt-bd-row"><span class="lt-bd-label" style="font-weight:700">실수령액</span><span class="lt-bd-val plus" style="font-size:15px">'+fmt(r.net)+'</span></div>';
+      noteEl.textContent='3억원 초과 당첨금은 소득세 33% + 지방소득세 3.3% = 총 36.3%가 원천징수됩니다. 복권 당첨금은 분리과세로 다른 소득과 합산되지 않습니다.';
+    }
+  }
+
+  var inp=document.getElementById('lt-prize-input');
+  document.querySelectorAll('.lt-rank-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.lt-rank-btn').forEach(function(b){b.classList.remove('on');});
+      btn.classList.add('on');
+      inp.value=fmtInput(RANKS[btn.dataset.rank].base);
+      render();
+    });
+  });
+  inp.addEventListener('input',function(){
+    var raw=this.value.replace(/[^0-9]/g,'');
+    var n=parseInt(raw)||0;
+    this.value=n>0?fmtInput(n):'';
+    document.querySelectorAll('.lt-rank-btn').forEach(function(b){b.classList.remove('on');});
+    render();
+  });
+  inp.value=fmtInput(LATEST_1ST_AMT);
+  render();
+})();
+</script>
+</body>
+</html>

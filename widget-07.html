@@ -160,10 +160,10 @@ input[type=range]{flex:1;accent-color:#7c3aed;}
     <div class="card">
       <div class="card-title">구매 횟수 설정</div>
       <div class="quick-btns">
-        <button class="quick-btn" onclick="setTickets(52)">1년 (52장)</button>
-        <button class="quick-btn" onclick="setTickets(520)">10년 (520장)</button>
-        <button class="quick-btn" onclick="setTickets(5200)">100년 (5200장)</button>
-        <button class="quick-btn" onclick="setTickets(50000)">5만장</button>
+        <button class="quick-btn" onclick="setTickets(100)">100장</button>
+        <button class="quick-btn" onclick="setTickets(1000)">1,000장</button>
+        <button class="quick-btn" onclick="setTickets(10000)">1만장</button>
+        <button class="quick-btn" onclick="setTickets(100000)">10만장</button>
         <button class="quick-btn" onclick="setTickets(1000000)">100만장</button>
       </div>
       <div class="sim-input">
@@ -287,8 +287,8 @@ const PRIZE_AVG = {
 };
 
 // 슬라이더 단계 매핑
-const SLIDER_MAP = [52, 520, 5200, 50000, 500000, 1000000];
-const SLIDER_LABEL = ['52장', '520장', '5,200장', '5만장', '50만장', '100만장'];
+const SLIDER_MAP = [100, 1000, 10000, 100000, 500000, 1000000];
+const SLIDER_LABEL = ['100장', '1,000장', '1만장', '10만장', '50만장', '100만장'];
 
 let currentTickets = 52;
 let simChart = null;
@@ -326,7 +326,7 @@ function syncQuickBtns() {
 
 // 퀵 버튼에 data-n 추가
 document.querySelectorAll('.quick-btn').forEach((b, i) => {
-  const vals = [52, 520, 5200, 50000, 1000000];
+  const vals = [100, 1000, 10000, 100000, 1000000];
   b.setAttribute('data-n', vals[i]);
 });
 

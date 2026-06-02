@@ -84,9 +84,11 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
 #w3 .manual-wrap input{flex:1;padding:9px 12px;border:1px solid #e0e0e8;border-radius:10px;font-size:13px;color:#1a1a2e;}
 #w3 .manual-wrap input:focus{outline:none;border-color:#1a1a2e;}
 #w3 .manual-wrap button{padding:9px 14px;background:#1a1a2e;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;}
-#w3 .check-btn{width:100%;padding:14px;background:#1a1a2e;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;transition:opacity .15s;}
+#w3 .check-btn{width:100%;padding:14px;background:#1a1a2e;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;transition:all .15s;}
 #w3 .check-btn:disabled{opacity:.35;cursor:not-allowed;}
 #w3 .check-btn:not(:disabled):hover{opacity:.85;}
+#w3 .check-btn.ready{background:linear-gradient(135deg,#e63946,#c1121f);font-size:17px;box-shadow:0 4px 18px rgba(230,57,70,.45);animation:pulse .9s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 4px 18px rgba(230,57,70,.45);}50%{transform:scale(1.03);box-shadow:0 6px 24px rgba(230,57,70,.65);}}
 #w3 .result{margin-top:20px;border-radius:14px;padding:20px;text-align:center;}
 #w3 .result.hidden{display:none;}
 #w3 .result.rank1{background:linear-gradient(135deg,#fff8e1,#fffde7);border:2px solid #ffd84d;}
@@ -1382,7 +1384,10 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
 
   function updatePickCount(){
     document.getElementById('pick-count').textContent=picked.length+'/6';
-    document.getElementById('check-btn').disabled=(picked.length!==6);
+    var cb=document.getElementById('check-btn');
+    cb.disabled=(picked.length!==6);
+    cb.classList.toggle('ready', picked.length===6);
+    cb.textContent=picked.length===6?'✔ CHECK IT NOW — 당첨 확인':'당첨 확인';
     // 6개 선택 시 미선택 버튼 비활성화
     for(var i=1;i<=45;i++){
       var btn=document.getElementById('nb-'+i);

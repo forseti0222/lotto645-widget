@@ -533,7 +533,8 @@ function scoreGrade(score) {
   if (score >= 79) return '⭐⭐⭐⭐⭐';
   if (score >= 73) return '⭐⭐⭐⭐';
   if (score >= 68) return '⭐⭐⭐';
-  return '⭐⭐';
+  if (score >= 60) return '⭐⭐';
+  return '⭐';
 }
 
 function renderResults(top5, freq, recentFreq, sumStats) {

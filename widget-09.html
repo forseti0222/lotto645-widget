@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>당첨 판매점 지도</title>
+<title>당첨 판매점 통계</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32px;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;}
@@ -15,39 +15,38 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
 .title{font-size:21px;font-weight:800;letter-spacing:-.4px;}
 .subtitle{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px;}
 
-.controls{background:#14142a;padding:14px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.round-wrap{display:flex;align-items:center;gap:6px;}
-.round-wrap select{appearance:none;-webkit-appearance:none;background:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:15px;font-weight:800;color:#1a1a2e;text-align:center;cursor:pointer;min-width:90px;}
-.round-wrap span{color:#fff;font-weight:700;font-size:14px;}
-.rank-btns{display:flex;gap:6px;margin-left:auto;}
-.rank-btn{padding:7px 14px;border:none;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.12);color:#fff;transition:background .15s;}
-.rank-btn.active{background:#fbc400;color:#1a1a2e;}
+.controls{background:#14142a;padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.search-wrap{display:flex;gap:8px;}
+.search-input{flex:1;padding:8px 14px;border:none;border-radius:10px;font-size:14px;background:#fff;color:#1a1a2e;}
+.region-wrap{display:flex;gap:6px;flex-wrap:wrap;}
+.region-btn{padding:6px 12px;border:none;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.12);color:#fff;transition:background .15s;}
+.region-btn.active{background:#fbc400;color:#1a1a2e;}
 
 .body{background:#fff;border:1px solid #ececf1;border-top:none;border-radius:0 0 18px 18px;overflow:hidden;}
 
-#map{width:100%;height:320px;background:#eee;}
+.summary{padding:10px 16px;background:#f8f8fc;border-bottom:1px solid #ececf1;font-size:12px;color:#6b6b7b;font-weight:600;}
 
-.summary{padding:12px 16px;background:#f8f8fc;border-top:1px solid #ececf1;border-bottom:1px solid #ececf1;font-size:13px;color:#6b6b7b;font-weight:600;}
-.summary span{color:#1a1a2e;font-weight:800;}
-
-.store-list{padding:0 16px 16px;}
-.store-item{padding:14px 0;border-bottom:1px solid #f0f0f5;display:flex;align-items:flex-start;gap:12px;cursor:pointer;}
+.store-list{padding:0 16px 8px;}
+.store-item{padding:12px 0;border-bottom:1px solid #f0f0f5;display:flex;align-items:flex-start;gap:10px;}
 .store-item:last-child{border-bottom:none;}
-.store-item:hover .store-name{color:#5b5bf6;}
-.store-rank{min-width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
-.store-rank.r1{background:#fff3cd;color:#9a6b00;}
-.store-rank.r2{background:#e9f0ff;color:#3355cc;}
+.store-no{min-width:28px;font-size:12px;font-weight:800;color:#aaa;padding-top:2px;text-align:center;}
+.store-no.top{color:#fbc400;}
 .store-info{flex:1;min-width:0;}
-.store-name{font-size:14px;font-weight:800;color:#1a1a2e;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.store-addr{font-size:12px;color:#6b6b7b;margin-bottom:2px;}
-.store-meta{display:flex;gap:8px;flex-wrap:wrap;}
-.store-tag{font-size:11px;padding:2px 8px;border-radius:10px;background:#f0f0f5;color:#6b6b7b;font-weight:600;}
-.store-tag.auto{background:#e9f7ef;color:#1a7a45;}
-.store-tag.manual{background:#fff3cd;color:#9a6b00;}
-.store-tag.semi{background:#e9f0ff;color:#3355cc;}
+.store-name{font-size:14px;font-weight:800;color:#1a1a2e;margin-bottom:2px;}
+.store-addr{font-size:12px;color:#6b6b7b;margin-bottom:4px;}
+.store-badges{display:flex;gap:6px;flex-wrap:wrap;}
+.badge-cnt{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;}
+.badge-1{background:#fff3cd;color:#9a6b00;}
+.badge-2{background:#e9f0ff;color:#3355cc;}
+.badge-last{background:#f0f0f5;color:#6b6b7b;}
+.badge-type{background:#f0f0f5;color:#6b6b7b;}
 
-.error-msg{padding:32px 16px;text-align:center;color:#999;font-size:14px;}
-.loading{padding:32px 16px;text-align:center;color:#999;font-size:14px;}
+.pagination{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 0 8px;}
+.pg-btn{width:36px;height:36px;border:none;border-radius:50%;background:#f0f0f5;color:#1a1a2e;font-size:20px;cursor:pointer;}
+.pg-btn:disabled{opacity:.3;cursor:default;}
+.pg-info{font-size:13px;font-weight:700;color:#6b6b7b;}
+
+.msg{padding:32px 16px;text-align:center;color:#aaa;font-size:14px;}
 
 .links{padding:16px;border-top:1px solid #ececf1;}
 .links-label{font-size:11px;color:#aaa;font-weight:600;margin-bottom:8px;text-align:center;}
@@ -59,29 +58,23 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
 <div id="w9">
   <div class="head">
     <span class="badge">LOTTO 6/45</span>
-    <div class="title">당첨 판매점 지도</div>
-    <div class="subtitle">1등·2등 당첨 판매점 위치를 확인하세요</div>
+    <div class="title">1등 배출 판매점 통계</div>
+    <div class="subtitle">역대 1등이 많이 나온 판매점을 확인하세요</div>
   </div>
 
   <div class="controls">
-    <div class="round-wrap">
-      <select id="round-sel"></select>
-      <span>회</span>
+    <div class="search-wrap">
+      <input class="search-input" id="search" type="text" placeholder="판매점명 또는 주소 검색">
     </div>
-    <div class="rank-btns">
-      <button class="rank-btn active" data-rank="all">전체</button>
-      <button class="rank-btn" data-rank="1">1등</button>
-      <button class="rank-btn" data-rank="2">2등</button>
+    <div class="region-wrap" id="region-wrap">
+      <button class="region-btn active" data-region="">전체</button>
     </div>
   </div>
 
   <div class="body">
-    <div id="map"></div>
-    <div class="summary" id="summary" style="display:none">
-      <span id="summary-text"></span>
-    </div>
+    <div id="summary" class="summary"></div>
     <div id="store-list" class="store-list">
-      <div class="loading">데이터를 불러오는 중...</div>
+      <div class="msg">데이터를 불러오는 중...</div>
     </div>
     <div class="links">
       <div class="links-label">LOTTO ARCHIVE 다른 글도 확인해보세요</div>
@@ -94,183 +87,128 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
 </div>
 
 <script>
-const KAKAO_KEY = 'dcfb1abbf8d828a93ace0f1422014b96';
-const STORES_URL = 'https://forseti0222.github.io/lotto645-widget/stores.json';
+const STATS_URL = 'https://forseti0222.github.io/lotto645-widget/store_stats.json';
+const PAGE_SIZE = 15;
+let allData = [];
+let filtered = [];
+let currentPage = 1;
+let currentRegion = '';
+let searchTimer = null;
 
-let map = null;
-let markers = [];
-let currentData = [];
-let currentRank = 'all';
-let kakaoLoaded = false;
-let allStores = {};
-
-// 회차 select 초기화 (stores.json 로드 후 채움)
-const sel = document.getElementById('round-sel');
-
-// 카카오맵 로드
-function loadKakaoMap(cb) {
-  if (kakaoLoaded) { cb(); return; }
-  const s = document.createElement('script');
-  s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_KEY}&autoload=false`;
-  s.onload = () => {
-    kakao.maps.load(() => {
-      kakaoLoaded = true;
-      cb();
-    });
-  };
-  document.head.appendChild(s);
+function typeLabel(code) {
+  if (code === 'M') return '수동';
+  if (code === 'Q') return '자동';
+  if (code === 'B') return '반자동';
+  return code || '';
 }
 
-function initMap() {
-  const container = document.getElementById('map');
-  const options = { center: new kakao.maps.LatLng(36.5, 127.5), level: 13 };
-  map = new kakao.maps.Map(container, options);
+function getRegion(addr) {
+  if (!addr) return '';
+  return addr.split(' ')[0] || '';
 }
 
-function clearMarkers() {
-  markers.forEach(m => m.setMap(null));
-  markers = [];
-}
-
-function renderMarkers(list) {
-  clearMarkers();
-  if (!map || !list.length) return;
-  const bounds = new kakao.maps.LatLngBounds();
-  list.forEach(s => {
-    if (!s.shpLat || !s.shpLot) return;
-    const pos = new kakao.maps.LatLng(parseFloat(s.shpLat), parseFloat(s.shpLot));
-    const isFirst = String(s.wnShpRnk) === '1';
-    const marker = new kakao.maps.Marker({
-      position: pos,
-      map,
-      title: s.shpNm,
-      image: new kakao.maps.MarkerImage(
-        isFirst
-          ? 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png'
-          : 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
-        new kakao.maps.Size(isFirst ? 24 : 20, isFirst ? 35 : 29)
-      )
-    });
-    const iw = new kakao.maps.InfoWindow({
-      content: `<div style="padding:6px 10px;font-size:12px;font-weight:700;white-space:nowrap">${s.shpNm}</div>`
-    });
-    kakao.maps.event.addListener(marker, 'click', () => {
-      iw.open(map, marker);
-      scrollToStore(s.ltShpId);
-    });
-    markers.push(marker);
-    bounds.extend(pos);
+function applyFilter() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  filtered = allData.filter(s => {
+    const regionMatch = !currentRegion || getRegion(s.addr) === currentRegion;
+    const searchMatch = !q || s.name.toLowerCase().includes(q) || (s.addr||'').toLowerCase().includes(q);
+    return regionMatch && searchMatch && s.cnt1 > 0;
   });
-  if (markers.length) map.setBounds(bounds);
+  currentPage = 1;
+  render();
 }
 
-function scrollToStore(id) {
-  const el = document.getElementById('store-' + id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function deviceLabel(code) {
-  if (code === 'M') return ['manual', '수동'];
-  if (code === 'Q') return ['auto', '자동'];
-  if (code === 'B') return ['semi', '반자동'];
-  return ['', code || ''];
-}
-
-function renderList(list) {
+function render() {
   const el = document.getElementById('store-list');
   const summary = document.getElementById('summary');
-  const summaryText = document.getElementById('summary-text');
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  currentPage = Math.min(currentPage, Math.max(1, totalPages));
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const offset = (currentPage - 1) * PAGE_SIZE;
 
-  if (!list.length) {
-    el.innerHTML = '<div class="error-msg">해당 조건의 판매점이 없습니다.</div>';
-    summary.style.display = 'none';
+  summary.textContent = `1등 배출 판매점 ${filtered.length}개`;
+
+  if (!paged.length) {
+    el.innerHTML = '<div class="msg">해당 조건의 판매점이 없습니다.</div>';
     return;
   }
 
-  const cnt1 = list.filter(s => String(s.wnShpRnk) === '1').length;
-  const cnt2 = list.filter(s => String(s.wnShpRnk) === '2').length;
-  summaryText.textContent = `총 ${list.length}개 판매점 (1등 ${cnt1}개 · 2등 ${cnt2}개)`;
-  summary.style.display = '';
-
-  el.innerHTML = list.map(s => {
-    const [cls, label] = deviceLabel(s.atmtPsvYn);
-    const rankCls = String(s.wnShpRnk) === '1' ? 'r1' : 'r2';
-    const rankLabel = String(s.wnShpRnk) === '1' ? '1등' : '2등';
+  const items = paged.map((s, i) => {
+    const rank = offset + i + 1;
+    const tl = typeLabel(s.type);
     return `
-    <div class="store-item" id="store-${s.ltShpId}">
-      <div class="store-rank ${rankCls}">${rankLabel}</div>
+    <div class="store-item">
+      <div class="store-no ${rank <= 3 ? 'top' : ''}">${rank}</div>
       <div class="store-info">
-        <div class="store-name">${s.shpNm}</div>
-        <div class="store-addr">${s.shpAddr || ''}</div>
-        <div class="store-meta">
-          ${label ? `<span class="store-tag ${cls}">${label}</span>` : ''}
-          ${s.shpTelno ? `<span class="store-tag">${s.shpTelno}</span>` : ''}
+        <div class="store-name">${s.name}</div>
+        <div class="store-addr">${s.addr || ''}</div>
+        <div class="store-badges">
+          <span class="badge-cnt badge-1">1등 ${s.cnt1}회</span>
+          ${s.cnt2 > 0 ? `<span class="badge-cnt badge-2">2등 ${s.cnt2}회</span>` : ''}
+          <span class="badge-cnt badge-last">${s.last}회차</span>
+          ${tl ? `<span class="badge-cnt badge-type">${tl}</span>` : ''}
         </div>
       </div>
     </div>`;
   }).join('');
+
+  const pagination = totalPages > 1 ? `
+    <div class="pagination">
+      <button class="pg-btn" onclick="changePage(-1)" ${currentPage===1?'disabled':''}>&#x2039;</button>
+      <span class="pg-info">${currentPage} / ${totalPages}</span>
+      <button class="pg-btn" onclick="changePage(1)" ${currentPage===totalPages?'disabled':''}>&#x203a;</button>
+    </div>` : '';
+
+  el.innerHTML = items + pagination;
 }
 
-function filterData() {
-  if (currentRank === 'all') return currentData;
-  return currentData.filter(s => String(s.wnShpRnk) === currentRank);
+function changePage(dir) {
+  currentPage += dir;
+  render();
+  document.getElementById('store-list').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-async function loadAllStores() {
-  try {
-    const res = await fetch(STORES_URL + '?t=' + Date.now());
-    allStores = await res.json();
-    const rounds = Object.keys(allStores).map(Number).sort((a, b) => b - a);
-    rounds.forEach(r => {
-      const opt = document.createElement('option');
-      opt.value = r;
-      opt.textContent = r;
-      sel.appendChild(opt);
+function buildRegionBtns() {
+  const regions = [...new Set(allData.filter(s=>s.cnt1>0).map(s=>getRegion(s.addr)).filter(Boolean))].sort();
+  const wrap = document.getElementById('region-wrap');
+  regions.forEach(r => {
+    const btn = document.createElement('button');
+    btn.className = 'region-btn';
+    btn.dataset.region = r;
+    btn.textContent = r;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentRegion = r;
+      applyFilter();
     });
-    return rounds[0] || null;
-  } catch {
-    document.getElementById('store-list').innerHTML = '<div class="error-msg">데이터를 불러올 수 없습니다.</div>';
-    return null;
-  }
-}
-
-function fetchStores(round) {
-  document.getElementById('store-list').innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
-  document.getElementById('summary').style.display = 'none';
-  clearMarkers();
-
-  currentData = allStores[String(round)] || [];
-
-  if (!currentData.length) {
-    document.getElementById('store-list').innerHTML = '<div class="error-msg">해당 회차 데이터가 없습니다.</div>';
-    return;
-  }
-
-  const filtered = filterData();
-  renderList(filtered);
-  renderMarkers(filtered);
-}
-
-// 이벤트
-sel.addEventListener('change', () => fetchStores(sel.value));
-
-document.querySelectorAll('.rank-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentRank = btn.dataset.rank;
-    const filtered = filterData();
-    renderList(filtered);
-    renderMarkers(filtered);
+    wrap.appendChild(btn);
   });
+  wrap.querySelector('[data-region=""]').addEventListener('click', () => {
+    document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+    wrap.querySelector('[data-region=""]').classList.add('active');
+    currentRegion = '';
+    applyFilter();
+  });
+}
+
+document.getElementById('search').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilter, 300);
 });
 
-// 초기화
-loadKakaoMap(async () => {
-  initMap();
-  const latest = await loadAllStores();
-  if (latest) fetchStores(latest);
-});
+async function init() {
+  try {
+    const res = await fetch(STATS_URL + '?t=' + Date.now());
+    allData = await res.json();
+    buildRegionBtns();
+    applyFilter();
+  } catch {
+    document.getElementById('store-list').innerHTML = '<div class="msg">데이터를 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</div>';
+  }
+}
+
+init();
 </script>
 </body>
 </html>

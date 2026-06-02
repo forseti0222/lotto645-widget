@@ -30,11 +30,6 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
     <div class="section-label">내 번호 선택 <span id="pick-count" class="pick-count">0/6</span></div>
     <div id="ball-grid" class="ball-grid"></div>
 
-    <!-- 직접 입력 -->
-    <div class="manual-wrap">
-      <input type="text" id="manual-input" placeholder="직접 입력 (예: 3,15,22,31,40,45)" />
-      <button id="manual-btn">입력</button>
-    </div>
 
     <button id="check-btn" class="check-btn" disabled>당첨 확인</button>
 
@@ -48,7 +43,7 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
     </div>
 
     <div class="links">
-      <div class="links-label">다른 계산기도 확인해보세요</div>
+      <div class="links-label">LOTTO ARCHIVE 다른 글도 확인해보세요</div>
       <div class="links-grid">
         <a href="https://archivebox.tistory.com/1" target="_blank" class="link-btn">회차별 당첨번호 조회</a>
         <a href="https://archivebox.tistory.com/2" target="_blank" class="link-btn">당첨금 실수령액 계산기</a>
@@ -80,10 +75,6 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
 #w3 .nb.grn{background:#b0d840;border-color:#b0d840;color:#fff;}
 #w3 .nb.selected{box-shadow:0 0 0 3px #1a1a2e;transform:scale(1.1);}
 #w3 .nb:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
-#w3 .manual-wrap{display:flex;gap:8px;margin-bottom:16px;}
-#w3 .manual-wrap input{flex:1;padding:9px 12px;border:1px solid #e0e0e8;border-radius:10px;font-size:13px;color:#1a1a2e;}
-#w3 .manual-wrap input:focus{outline:none;border-color:#1a1a2e;}
-#w3 .manual-wrap button{padding:9px 14px;background:#1a1a2e;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;}
 #w3 .check-btn{width:100%;padding:14px;background:#1a1a2e;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;transition:all .15s;}
 #w3 .check-btn:disabled{opacity:.35;cursor:not-allowed;}
 #w3 .check-btn:not(:disabled):hover{opacity:.85;}
@@ -1472,20 +1463,6 @@ body{background:#f5f5f7;display:flex;justify-content:center;padding:16px 16px 32
     buildBallGrid();
     updatePickCount();
 
-    document.getElementById('manual-btn').addEventListener('click',function(){
-      var val=document.getElementById('manual-input').value;
-      var nums=val.split(/[,\s]+/).map(Number).filter(function(n){return n>=1&&n<=45;});
-      if(nums.length!==6){alert('1~45 사이 숫자 6개를 입력해주세요.');return;}
-      if(new Set(nums).size!==6){alert('중복된 번호가 있습니다.');return;}
-      clearPicks();
-      nums.forEach(function(n){
-        picked.push(n);
-        var btn=document.getElementById('nb-'+n);
-        if(btn) btn.classList.add('selected');
-      });
-      updatePickCount();
-      document.getElementById('manual-input').value='';
-    });
 
     document.getElementById('check-btn').addEventListener('click',checkWin);
   }

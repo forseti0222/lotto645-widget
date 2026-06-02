@@ -236,6 +236,9 @@ var LATEST_3RD_AMT = 1319104;
       render();
     });
   });
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter'||e.keyCode===13){this.blur();}
+  });
   inp.addEventListener('input',function(){
     var raw=this.value.replace(/[^0-9]/g,'');
     var n=parseInt(raw)||0;

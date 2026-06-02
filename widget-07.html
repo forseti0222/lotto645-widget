@@ -64,15 +64,28 @@ input[type=range]{flex:1;accent-color:#7c3aed;}
 .result-table th{background:#f8f9fa;padding:8px 10px;text-align:center;color:#888;font-weight:600;border-bottom:1px solid #eee;}
 .result-table td{padding:8px 10px;text-align:center;border-bottom:1px solid #f5f5f5;color:#333;}
 
-/* 기대값 */
-.ev-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
-.ev-box{background:#f8f9fa;border-radius:10px;padding:14px;text-align:center;}
-.ev-label{font-size:11px;color:#999;margin-bottom:6px;}
-.ev-val{font-size:20px;font-weight:700;}
-.ev-val.minus{color:#e03131;}
-.ev-val.plus{color:#2f9e44;}
-
 .notice{font-size:12px;color:#aaa;line-height:1.7;margin-top:8px;padding:12px;background:#f8f9fa;border-radius:8px;}
+
+/* 운 점수 */
+.luck-wrap{display:flex;gap:16px;align-items:center;margin-bottom:4px;}
+.luck-score-wrap{text-align:center;min-width:80px;}
+.luck-label{font-size:11px;color:#aaa;margin-bottom:4px;}
+.luck-score{font-size:36px;font-weight:800;color:#111;line-height:1;}
+.luck-grade{font-size:13px;font-weight:700;margin-top:6px;}
+.luck-bar-wrap{flex:1;}
+.luck-bar-track{height:12px;background:#f0f0f0;border-radius:6px;position:relative;margin-bottom:6px;overflow:hidden;}
+.luck-bar-fill{height:100%;border-radius:6px;transition:width .6s ease;background:linear-gradient(90deg,#1971c2,#2f9e44,#f59f00,#e03131);}
+.luck-bar-center{position:absolute;top:0;left:50%;width:2px;height:100%;background:#ccc;}
+.luck-bar-labels{display:flex;justify-content:space-between;font-size:10px;color:#aaa;}
+
+
+/* 당첨 시기 테이블 */
+.when-table{width:100%;border-collapse:collapse;font-size:13px;}
+.when-table th{background:#f8f9fa;padding:9px 8px;text-align:center;color:#888;font-weight:600;border-bottom:1px solid #eee;font-size:12px;}
+.when-table td{padding:10px 8px;text-align:center;border-bottom:1px solid #f5f5f5;color:#555;}
+.when-table tr:hover td{background:#fafafa;}
+.when-table .row-r1 td{background:#fff5f5;}
+.when-table .r1-val{color:#e03131;font-weight:700;}
 
 /* 프로그레스 */
 .progress-wrap{display:none;text-align:center;padding:20px;}
@@ -99,7 +112,6 @@ input[type=range]{flex:1;accent-color:#7c3aed;}
   <div class="tabs">
     <button class="tab active" onclick="switchTab(0)">당첨 확률</button>
     <button class="tab" onclick="switchTab(1)">시뮬레이터</button>
-    <button class="tab" onclick="switchTab(2)">기대값</button>
   </div>
 
   <!-- 탭1: 당첨 확률 -->
@@ -146,12 +158,50 @@ input[type=range]{flex:1;accent-color:#7c3aed;}
     </div>
 
     <div class="card">
-      <div class="card-title">확률 시각화 — 1등이 얼마나 어려운가</div>
-      <canvas id="probChart" height="200"></canvas>
-      <div class="notice">
-        1등 확률(1/814만)은 서울 시민 중 특정 1명을 맞추는 것과 비슷합니다.<br>
-        매주 1장씩 구매해도 평균 <b>15만 6635년</b>에 한 번 당첨됩니다.
-      </div>
+      <div class="card-title">내가 1등 되는 날 — 매주 구매 기준</div>
+      <table class="when-table">
+        <thead>
+          <tr>
+            <th>등수</th>
+            <th>매주 1게임</th>
+            <th>매주 5게임</th>
+            <th>매주 10게임</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rank-badge r5">5등</span></td>
+            <td>45주</td>
+            <td>9주</td>
+            <td>5주</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge r4">4등</span></td>
+            <td>14년</td>
+            <td>3년</td>
+            <td>약 1년 5개월</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge r3">3등</span></td>
+            <td>687년</td>
+            <td>138년</td>
+            <td>69년</td>
+          </tr>
+          <tr>
+            <td><span class="rank-badge r2">2등</span></td>
+            <td>2만 6천년</td>
+            <td>5,221년</td>
+            <td>2,611년</td>
+          </tr>
+          <tr class="row-r1">
+            <td><span class="rank-badge r1">1등</span></td>
+            <td class="r1-val">15만 6천년</td>
+            <td class="r1-val">3만 1천년</td>
+            <td class="r1-val">1만 5천년</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="notice" style="margin-top:14px;">매주 구매 횟수별 <b>통계적 평균</b> 기준입니다. 실제로는 더 빨리 당첨될 수도, 영원히 안 될 수도 있습니다.</div>
     </div>
   </div>
 
@@ -160,11 +210,14 @@ input[type=range]{flex:1;accent-color:#7c3aed;}
     <div class="card">
       <div class="card-title">구매 횟수 설정</div>
       <div class="quick-btns">
-        <button class="quick-btn" onclick="setTickets(100)">100장</button>
-        <button class="quick-btn" onclick="setTickets(1000)">1,000장</button>
-        <button class="quick-btn" onclick="setTickets(10000)">1만장</button>
-        <button class="quick-btn" onclick="setTickets(100000)">10만장</button>
-        <button class="quick-btn" onclick="setTickets(1000000)">100만장</button>
+        <button class="quick-btn" onclick="setTickets(1000)">1,000게임</button>
+        <button class="quick-btn" onclick="setTickets(10000)">1만 게임</button>
+        <button class="quick-btn" onclick="setTickets(50000)">5만 게임</button>
+        <button class="quick-btn" onclick="setTickets(100000)">10만 게임</button>
+        <button class="quick-btn" onclick="setTickets(500000)">50만 게임</button>
+        <button class="quick-btn" onclick="setTickets(1000000)">100만 게임</button>
+        <button class="quick-btn" onclick="setTickets(5000000)">500만 게임</button>
+        <button class="quick-btn" onclick="setTickets(10000000)">1천만 게임</button>
       </div>
       <div class="sim-input">
         <div class="input-row">
@@ -208,60 +261,30 @@ input[type=range]{flex:1;accent-color:#7c3aed;}
         </table>
       </div>
       <div class="card">
-        <div class="card-title">당첨금 분포</div>
-        <canvas id="simChart" height="180"></canvas>
+        <div class="card-title">이번 시뮬레이션 운 점수</div>
+        <div class="luck-wrap">
+          <div class="luck-score-wrap">
+            <div class="luck-label">운 점수</div>
+            <div class="luck-score" id="luck-score">-</div>
+            <div class="luck-grade" id="luck-grade">-</div>
+          </div>
+          <div class="luck-bar-wrap">
+            <div class="luck-bar-track">
+              <div class="luck-bar-fill" id="luck-bar"></div>
+              <div class="luck-bar-center"></div>
+            </div>
+            <div class="luck-bar-labels">
+              <span>최악</span>
+              <span>평균</span>
+              <span>최고</span>
+            </div>
+          </div>
+        </div>
+        <div class="notice" id="luck-notice" style="margin-top:12px;"></div>
       </div>
     </div>
   </div>
 
-  <!-- 탭3: 기대값 -->
-  <div class="panel" id="panel2">
-    <div class="card">
-      <div class="card-title">장당 기대값 계산</div>
-      <div class="ev-row">
-        <div class="ev-box">
-          <div class="ev-label">구매 비용</div>
-          <div class="ev-val" style="color:#333;">1,000원</div>
-        </div>
-        <div class="ev-box">
-          <div class="ev-label">이론적 기대값</div>
-          <div class="ev-val minus" id="ev-theory">-</div>
-        </div>
-      </div>
-      <div class="notice">
-        기대값 = 각 등수의 (당첨금 × 확률)의 합<br>
-        로또는 판매금의 약 50%를 상금으로 배분하므로<br>
-        이론 기대값은 장당 약 <b>500원</b>입니다.<br>
-        즉 1000원을 사면 평균 500원을 잃습니다.
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">구매 횟수별 누적 손실 기대값</div>
-      <canvas id="evChart" height="200"></canvas>
-      <div class="notice" style="margin-top:12px;">
-        기대값은 확률적 평균입니다. 실제로는 1등에 당첨될 수도, 한 번도 못 맞출 수도 있습니다.
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">1등 당첨까지 필요한 구매 횟수</div>
-      <div class="stat-row">
-        <div class="stat-box">
-          <div class="stat-label">평균 필요 횟수</div>
-          <div class="stat-val purple">814만 5060회</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">필요 금액</div>
-          <div class="stat-val red">814억원</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">매주 1장 기준</div>
-          <div class="stat-val" style="font-size:14px;">15만 6635년</div>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </div>
 
@@ -287,8 +310,8 @@ const PRIZE_AVG = {
 };
 
 // 슬라이더 단계 매핑
-const SLIDER_MAP = [100, 1000, 10000, 100000, 500000, 1000000];
-const SLIDER_LABEL = ['100장', '1,000장', '1만장', '10만장', '50만장', '100만장'];
+const SLIDER_MAP = [1000, 10000, 100000, 1000000, 5000000, 10000000];
+const SLIDER_LABEL = ['1,000게임', '1만 게임', '10만 게임', '100만 게임', '500만 게임', '1천만 게임'];
 
 let currentTickets = 52;
 let simChart = null;
@@ -297,7 +320,6 @@ let simChart = null;
 function switchTab(idx) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
   document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===idx));
-  if (idx === 2) renderEvChart();
 }
 
 // 슬라이더
@@ -324,9 +346,16 @@ function syncQuickBtns() {
   });
 }
 
+function onDirectInput() {
+  const val = parseInt(document.getElementById('directInput').value);
+  if (!val || val < 1) return;
+  currentTickets = Math.min(val, 10000000);
+  document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+}
+
 // 퀵 버튼에 data-n 추가
 document.querySelectorAll('.quick-btn').forEach((b, i) => {
-  const vals = [100, 1000, 10000, 100000, 1000000];
+  const vals = [1000, 10000, 50000, 100000, 500000, 1000000, 5000000, 10000000];
   b.setAttribute('data-n', vals[i]);
 });
 
@@ -404,7 +433,54 @@ function showResult(res, n) {
     </tr>`;
   }).join('');
 
-  renderSimChart(res.wins, n);
+  renderLuck(res, n);
+}
+
+function renderLuck(res, n) {
+  const expectedPrize =
+    n * PROB[1] * PRIZE_AVG[1] +
+    n * PROB[2] * PRIZE_AVG[2] +
+    n * PROB[3] * PRIZE_AVG[3] +
+    n * PROB[4] * PRIZE_FIXED[4] +
+    n * PROB[5] * PRIZE_FIXED[5];
+
+  // res.totalPrize 직접 사용 (시뮬레이션 결과와 동일한 값)
+
+  const actualPrize =
+    res.wins[1] * PRIZE_AVG[1] +
+    res.wins[2] * PRIZE_AVG[2] +
+    res.wins[3] * PRIZE_AVG[3] +
+    res.wins[4] * PRIZE_FIXED[4] +
+    res.wins[5] * PRIZE_FIXED[5];
+  const ratio = expectedPrize > 0 ? actualPrize / expectedPrize : 0;
+  // 0~2 범위를 0~100점으로 변환 (1.0 = 50점 = 평균)
+  const score = Math.min(100, Math.max(0, Math.round(ratio * 50)));
+
+  const grades = [
+    { min:85, label:'전설적인 행운', color:'#e03131' },
+    { min:65, label:'운이 좋음', color:'#f59f00' },
+    { min:40, label:'평균적인 운', color:'#2f9e44' },
+    { min:20, label:'운이 나쁨', color:'#1971c2' },
+    { min:0,  label:'극악의 불운', color:'#868e96' },
+  ];
+  const grade = grades.find(g => score >= g.min);
+
+  document.getElementById('luck-score').textContent = score + '점';
+  document.getElementById('luck-score').style.color = grade.color;
+  const gradeEl = document.getElementById('luck-grade');
+  gradeEl.textContent = grade.label;
+  gradeEl.style.color = grade.color;
+  document.getElementById('luck-bar').style.width = score + '%';
+
+  const notices = [
+    `기대 당첨금의 ${(ratio*100).toFixed(0)}%를 회수했습니다.`,
+    score >= 85 ? '정말 운이 좋은 결과입니다. 로또 사러 가세요! 🎉' :
+    score >= 65 ? '평균보다 좋은 결과입니다.' :
+    score >= 40 ? '통계적으로 평균에 가까운 결과입니다.' :
+    score >= 20 ? '이번엔 운이 따르지 않았습니다.' :
+    '극히 드문 불운입니다. 다음엔 좋을 거예요.'
+  ];
+  document.getElementById('luck-notice').innerHTML = notices.join(' ');
 }
 
 function renderSimChart(wins, n) {
@@ -458,44 +534,7 @@ function renderSimChart(wins, n) {
 }
 
 // 기대값 차트
-let evChart = null;
-function renderEvChart() {
-  const steps = [1, 10, 52, 100, 520, 1000, 5200, 10000, 50000, 100000];
-  const labels = steps.map(s => s >= 10000 ? (s/10000)+'만장' : s+'장');
-  const losses = steps.map(s => -(s * 1000 * 0.5));
 
-  if (evChart) evChart.destroy();
-  evChart = new Chart(document.getElementById('evChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: '누적 기대 손실',
-        data: losses,
-        borderColor: '#e03131',
-        backgroundColor: '#ffe3e355',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.3,
-        pointRadius: 4,
-        pointBackgroundColor: '#e03131',
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => '기대 손실: ' + fmt(Math.abs(ctx.raw)) + '원' } }
-      },
-      scales: {
-        x: { ticks: { font: { size: 11 } } },
-        y: { ticks: { font: { size: 11 }, callback: v => fmt(Math.abs(v)) + '원' } }
-      }
-    }
-  });
-
-  document.getElementById('ev-theory').textContent = '약 500원';
-}
 
 // 포맷
 function fmt(v) {

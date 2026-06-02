@@ -15,6 +15,7 @@
   </div>
 
   <div class="lt-body">
+    <div id="lt-round-label" class="lt-round-label"></div>
     <div class="lt-rank-grid">
       <button class="lt-rank-btn on" data-rank="1">1등<span class="lt-prize" id="lt-prize-1"></span></button>
       <button class="lt-rank-btn" data-rank="2">2등<span class="lt-prize" id="lt-prize-2"></span></button>
@@ -26,7 +27,7 @@
     <div class="lt-input-row">
       <label>당첨금 직접 입력</label>
       <div class="lt-input-wrap">
-        <input type="text" id="lt-prize-input" inputmode="numeric" />
+        <input type="text" id="lt-prize-input" inputmode="numeric" enterkeyhint="done" />
         <span>원</span>
       </div>
     </div>
@@ -62,6 +63,7 @@
 #lotto-tax-wrap .lt-title{font-size:20px;font-weight:800;margin-bottom:4px;}
 #lotto-tax-wrap .lt-subtitle{font-size:13px;color:rgba(255,255,255,.6);}
 #lotto-tax-wrap .lt-body{background:#fff;border:1px solid #ececf1;border-top:none;border-radius:0 0 18px 18px;padding:24px;}
+#lotto-tax-wrap .lt-round-label{font-size:11px;color:#aaa;margin-bottom:8px;text-align:right;}
 #lotto-tax-wrap .lt-rank-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:20px;}
 #lotto-tax-wrap .lt-rank-btn{padding:10px 4px;border:1px solid #e0e0e8;border-radius:10px;background:#f8f8fc;color:#6b6b7b;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px;}
 #lotto-tax-wrap .lt-rank-btn.on{background:#1a1a2e;color:#fff;border-color:#1a1a2e;}
@@ -118,6 +120,7 @@
 
 <script>
 // ↓ generate_widget.py 실행 시 자동 갱신
+var LATEST_NO = 1226;
 var LATEST_1ST_AMT = 2815230113;
 var LATEST_2ND_AMT = 62560670;
 var LATEST_3RD_AMT = 1319104;
@@ -136,6 +139,7 @@ var LATEST_3RD_AMT = 1319104;
     if(n>=10000)return '약 '+Math.round(n/10000).toLocaleString('ko-KR')+'만';
     return n.toLocaleString('ko-KR')+'원';
   }
+  document.getElementById('lt-round-label').textContent=LATEST_NO+'회 실제 당첨금 기준';
   [1,2,3].forEach(function(r){
     var el=document.getElementById('lt-prize-'+r);
     if(el)el.textContent=fmtShortBtn(RANKS[r].base);

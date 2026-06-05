@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Tetris clone made with HTML</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #15171f; color: #e8e8e8;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; padding: 20px; gap: 20px;
+  }
+  canvas { background: #0c0e14; border: 2px solid #444; border-radius: 6px; display: block; }
+  .panel { display: flex; flex-direction: column; gap: 14px; min-width: 130px; }
+  .box { background: #0c0e14; border: 1px solid #2a2e3a; border-radius: 6px; padding: 12px; text-align: center; }
+  .box h2 { font-size: 12px; letter-spacing: 1px; color: #8a93a6; text-transform: uppercase; margin-bottom: 6px; }
+  .box .val { font-size: 26px; font-weight: 700; }
+  .keys { font-size: 12px; line-height: 1.9; color: #8a93a6; text-align: left; }
+  .keys b { color: #e8e8e8; }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(12,14,20,0.9);
+    display: none; flex-direction: column; justify-content: center; align-items: center; gap: 18px;
+  }
+  .overlay h1 { font-size: 30px; }
+  .overlay .s { color: #8a93a6; }
+  button {
+    background: #4a8fe0; color: #fff; border: none; border-radius: 6px;
+    padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  button:active { transform: translateY(1px); }
+</style>
+</head>
+<body>
+  <canvas id="board" width="300" height="600"></canvas>
+  <div class="panel">
+    <div class="box"><h2>점수</h2><div class="val" id="score">0</div></div>
+    <div class="box"><h2>다음</h2><canvas id="next" width="106" height="106" style="display:block;margin:0 auto;background:#0c0e14"></canvas></div>
+    <div class="box keys">
+      <b>← →</b> 이동<br>
+      <b>↑</b> 회전<br>
+      <b>↓</b> 빠른 낙하<br>
+      <b>Space</b> 즉시 낙하
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <h1>게임 오버</h1>
+    <div class="s">점수 <span id="finalScore">0</span></div>
+    <button onclick="startGame()">다시 시작</button>
+  </div>
+
+<script>
+const COLS = 10, ROWS = 20, SIZE = 30;
+const ctx = document.getElementById('board').getContext('2d');
+const nctx = document.getElementById('next').getContext('2d');
+
+const COLORS = { I:'#4fc3d9', O:'#e6c84c', T:'#a66bd4', S:'#5fc26b', Z:'#e36464', J:'#5a7fd4', L:'#e0944c' };
+const SHAPES = {
+  I:[[1,1,1,1]], O:[[1,1],[1,1]], T:[[0,1,0],[1,1,1]],
+  S:[[0,1,1],[1,1,0]], Z:[[1,1,0],[0,1,1]], J:[[1,0,0],[1,1,1]], L:[[0,0,1],[1,1,1]]
+};
+const TYPES = Object.keys(SHAPES);
+
+let grid, cur, nextType, score, over, dropTimer;
+
+function newGrid() { return Array.from({length:ROWS}, () => Array(COLS).fill(null)); }
+function rand() { return TYPES[Math.floor(Math.random()*TYPES.length)]; }
+
+function spawn() {
+  const t = nextType || rand();
+  nextType = rand();
+  const shape = SHAPES[t].map(r => r.slice());
+  cur = { type:t, shape, x:Math.floor((COLS-shape[0].length)/2), y:0 };
+  if (collides(cur.shape, cur.x, cur.y)) gameOver();
+  drawNext();
+}
+
+function collides(s, x, y) {
+  for (let r=0; r<s.length; r++) for (let c=0; c<s[r].length; c++) {
+    if (!s[r][c]) continue;
+    const nx=x+c, ny=y+r;
+    if (nx<0 || nx>=COLS || ny>=ROWS) return true;
+    if (ny>=0 && grid[ny][nx]) return true;
+  }
+  return false;
+}
+
+function rotate(s) {
+  const R=s.length, C=s[0].length, o=Array.from({length:C},()=>Array(R).fill(0));
+  for (let r=0;r<R;r++) for (let c=0;c<C;c++) o[c][R-1-r]=s[r][c];
+  return o;
+}
+
+function merge() {
+  cur.shape.forEach((row,r)=>row.forEach((v,c)=>{ if(v){const ny=cur.y+r; if(ny>=0) grid[ny][cur.x+c]=cur.type;} }));
+}
+
+function clearLines() {
+  let cl=0;
+  for (let r=ROWS-1; r>=0; r--) {
+    if (grid[r].every(c=>c)) { grid.splice(r,1); grid.unshift(Array(COLS).fill(null)); cl++; r++; }
+  }
+  if (cl) { score += [0,100,300,500,800][cl]; document.getElementById('score').textContent = score; }
+}
+
+function lock() { merge(); clearLines(); spawn(); }
+function step() { if (!collides(cur.shape, cur.x, cur.y+1)) cur.y++; else lock(); draw(); }
+function move(dx) { if (!collides(cur.shape, cur.x+dx, cur.y)) { cur.x+=dx; draw(); } }
+function softDrop() { if (!collides(cur.shape, cur.x, cur.y+1)) { cur.y++; draw(); } else lock(); }
+function hardDrop() { while (!collides(cur.shape, cur.x, cur.y+1)) cur.y++; lock(); draw(); }
+function tryRotate() {
+  const r = rotate(cur.shape);
+  for (const k of [0,-1,1,-2,2]) if (!collides(r, cur.x+k, cur.y)) { cur.shape=r; cur.x+=k; draw(); return; }
+}
+
+function cell(g, x, y, color, sz) {
+  g.fillStyle = color;
+  g.fillRect(x*sz, y*sz, sz, sz);
+  g.fillStyle = 'rgba(255,255,255,0.2)'; g.fillRect(x*sz, y*sz, sz, 3);
+  g.strokeStyle = 'rgba(0,0,0,0.4)'; g.strokeRect(x*sz+0.5, y*sz+0.5, sz-1, sz-1);
+}
+
+function draw() {
+  ctx.fillStyle = '#0c0e14'; ctx.fillRect(0,0,300,600);
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++) ctx.strokeRect(c*SIZE,r*SIZE,SIZE,SIZE);
+  for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++) if (grid[r][c]) cell(ctx,c,r,COLORS[grid[r][c]],SIZE);
+  cur.shape.forEach((row,r)=>row.forEach((v,c)=>{ if(v&&cur.y+r>=0) cell(ctx,cur.x+c,cur.y+r,COLORS[cur.type],SIZE); }));
+}
+
+function drawNext() {
+  nctx.fillStyle = '#0c0e14'; nctx.fillRect(0,0,106,106);
+  const s = SHAPES[nextType], w=s[0].length, h=s.length, sz=24, ox=(106-w*sz)/2, oy=(106-h*sz)/2;
+  nctx.save(); nctx.translate(ox,oy);
+  s.forEach((row,r)=>row.forEach((v,c)=>{ if(v) cell(nctx,c,r,COLORS[nextType],sz); }));
+  nctx.restore();
+}
+
+function gameOver() {
+  over = true; clearInterval(dropTimer);
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function startGame() {
+  grid = newGrid(); score = 0; over = false; nextType = null;
+  document.getElementById('score').textContent = 0;
+  document.getElementById('overlay').style.display = 'none';
+  spawn(); draw();
+  clearInterval(dropTimer); dropTimer = setInterval(step, 500);
+}
+
+document.addEventListener('keydown', e => {
+  if (over) return;
+  switch (e.key) {
+    case 'ArrowLeft': move(-1); break;
+    case 'ArrowRight': move(1); break;
+    case 'ArrowUp': tryRotate(); break;
+    case 'ArrowDown': softDrop(); break;
+    case ' ': e.preventDefault(); hardDrop(); break;
+  }
+});
+
+startGame();
+</script>
+</body>
+</html>

@@ -184,13 +184,15 @@ function startGame() {
 }
 
 document.addEventListener('keydown', e => {
+  // 게임 조작키는 브라우저 기본 동작(스크롤) 막기
+  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
   if (over) return;
   switch (e.key) {
     case 'ArrowLeft': move(-1); break;
     case 'ArrowRight': move(1); break;
     case 'ArrowUp': tryRotate(); break;
     case 'ArrowDown': softDrop(); break;
-    case ' ': e.preventDefault(); hardDrop(); break;
+    case ' ': hardDrop(); break;
   }
 });
 

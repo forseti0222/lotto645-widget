@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>불릿 헤븐 #1</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#0a0c10; }
+  body { display:flex; align-items:center; justify-content:center;
+    font-family:'Segoe UI',sans-serif; color:#e8eef5; }
+  #wrap { position:relative; }
+  canvas { display:block; background:#11151c; border-radius:8px; box-shadow:0 0 40px rgba(0,0,0,0.6); }
+
+  /* HUD */
+  #hud { position:absolute; top:10px; left:10px; right:10px; pointer-events:none;
+    display:flex; flex-direction:column; gap:6px; }
+  #xpbar { height:10px; background:#1c2230; border-radius:5px; overflow:hidden; }
+  #xpfill { height:100%; width:0%; background:linear-gradient(90deg,#4ad,#6cf); transition:width .1s; }
+  #toprow { display:flex; justify-content:space-between; font-size:14px; font-weight:600; text-shadow:0 1px 3px #000; }
+  #lv { color:#6cf; }
+
+  /* 오버레이 */
+  .overlay { position:absolute; inset:0; display:none; flex-direction:column;
+    align-items:center; justify-content:center; background:rgba(8,10,14,0.88);
+    border-radius:8px; text-align:center; gap:16px; padding:24px; }
+  .overlay.on { display:flex; }
+  .overlay h1 { font-size:32px; letter-spacing:2px; }
+  .overlay .sub { color:#8a97a8; font-size:14px; line-height:1.7; }
+  .overlay button { pointer-events:auto; background:linear-gradient(180deg,#4ad,#39c);
+    border:none; color:#fff; font-size:17px; font-weight:700; padding:13px 30px;
+    border-radius:8px; cursor:pointer; box-shadow:0 5px 18px rgba(60,160,220,0.4); }
+  .overlay button:active { transform:translateY(2px); }
+
+  /* 레벨업 카드 */
+  #levelup { position:absolute; inset:0; display:none; flex-direction:column;
+    align-items:center; justify-content:center; background:rgba(8,10,14,0.9); border-radius:8px; gap:18px; }
+  #levelup.on { display:flex; }
+  #levelup h2 { color:#6cf; font-size:24px; letter-spacing:2px; }
+  .cards { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+  .card { width:140px; background:#19202c; border:1px solid #2a3545; border-radius:10px;
+    padding:18px 14px; cursor:pointer; transition:all .15s; }
+  .card:hover { border-color:#4ad; background:#1f2937; transform:translateY(-3px); }
+  .card .ic { font-size:32px; }
+  .card .nm { font-weight:700; margin:8px 0 4px; }
+  .card .ds { font-size:12px; color:#8a97a8; line-height:1.5; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv" width="480" height="640"></canvas>
+  <div id="hud">
+    <div id="toprow">
+      <span id="lv">Lv 1</span>
+      <span id="timer">00:00</span>
+      <span id="kills">처치 0</span>
+    </div>
+    <div id="xpbar"><div id="xpfill"></div></div>
+  </div>
+
+  <div class="overlay on" id="title">
+    <h1>불릿 헤븐</h1>
+    <div class="sub">이동하며 살아남아라.<br>공격은 자동. 적을 처치해 레벨을 올려라.<br><br>이동: 방향키 / WASD</div>
+    <button onclick="startGame()">시작 ▶</button>
+  </div>
+
+  <div class="overlay" id="gameover">
+    <h1>전멸</h1>
+    <div class="sub">생존 <span id="finalTime">00:00</span> · 처치 <span id="finalKills">0</span></div>
+    <button onclick="startGame()">다시 시작</button>
+  </div>
+
+  <div id="levelup">
+    <h2>레벨 업!</h2>
+    <div class="cards" id="cards"></div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+
+let player, enemies, bullets, orbs, keys, running, paused;
+let time, spawnAcc, lastTs, kills;
+
+function reset(){
+  player = { x:W/2, y:H/2, r:11, speed:2.6, hp:100, hpMax:100,
+             lv:1, xp:0, xpNext:5,
+             fireRate:600, fireAcc:0, dmg:10, bulletSpeed:5, range:240, pierce:0, projectiles:1 };
+  enemies = []; bullets = []; orbs = [];
+  keys = {}; time = 0; spawnAcc = 0; kills = 0; paused = false;
+}
+
+function startGame(){
+  reset();
+  document.getElementById('title').classList.remove('on');
+  document.getElementById('gameover').classList.remove('on');
+  document.getElementById('levelup').classList.remove('on');
+  running = true; lastTs = performance.now();
+  requestAnimationFrame(loop);
+}
+
+// ===== 입력 =====
+addEventListener('keydown', e=>{
+  keys[e.key.toLowerCase()] = true;
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase())) e.preventDefault();
+});
+addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+// ===== 적 스폰 =====
+function spawnEnemy(){
+  // 화면 밖 가장자리에서 등장
+  const side = Math.floor(Math.random()*4);
+  let x,y;
+  if(side===0){ x=Math.random()*W; y=-20; }
+  else if(side===1){ x=Math.random()*W; y=H+20; }
+  else if(side===2){ x=-20; y=Math.random()*H; }
+  else { x=W+20; y=Math.random()*H; }
+  // 시간이 지날수록 체력↑
+  const tier = 1 + time/60;
+  enemies.push({ x, y, r:10, speed:0.7+Math.random()*0.5, hp:14*tier, hpMax:14*tier, dmg:8 });
+}
+
+// ===== 자동 공격 =====
+function autoFire(){
+  // 가장 가까운 적 탐색
+  let near=null, nd=player.range;
+  for(const e of enemies){
+    const d=Math.hypot(e.x-player.x, e.y-player.y);
+    if(d<nd){ nd=d; near=e; }
+  }
+  if(!near) return;
+  const base = Math.atan2(near.y-player.y, near.x-player.x);
+  const n = player.projectiles, spread=0.18;
+  for(let i=0;i<n;i++){
+    const a = base + (i-(n-1)/2)*spread;
+    bullets.push({ x:player.x, y:player.y, r:5,
+      vx:Math.cos(a)*player.bulletSpeed, vy:Math.sin(a)*player.bulletSpeed,
+      dmg:player.dmg, life:120, pierce:player.pierce });
+  }
+}
+
+// ===== 레벨업 =====
+const UPGRADES = [
+  { ic:'⚔️', nm:'공격력', ds:'데미지 +6', fn:p=>p.dmg+=6 },
+  { ic:'⚡', nm:'연사', ds:'발사 속도 +20%', fn:p=>p.fireRate*=0.8 },
+  { ic:'🎯', nm:'다발', ds:'투사체 +1', fn:p=>p.projectiles+=1 },
+  { ic:'🚀', nm:'관통', ds:'적 관통 +1', fn:p=>p.pierce+=1 },
+  { ic:'👟', nm:'신속', ds:'이동 속도 +15%', fn:p=>p.speed*=1.15 },
+  { ic:'📡', nm:'사거리', ds:'사정거리 +60', fn:p=>p.range+=60 },
+  { ic:'❤️', nm:'활력', ds:'최대 HP +30, 회복', fn:p=>{p.hpMax+=30;p.hp=Math.min(p.hpMax,p.hp+30);} },
+];
+function offerLevelUp(){
+  paused = true;
+  const pool=[...UPGRADES].sort(()=>Math.random()-0.5).slice(0,3);
+  const box=document.getElementById('cards'); box.innerHTML='';
+  pool.forEach(u=>{
+    const d=document.createElement('div'); d.className='card';
+    d.innerHTML=`<div class="ic">${u.ic}</div><div class="nm">${u.nm}</div><div class="ds">${u.ds}</div>`;
+    d.onclick=()=>{ u.fn(player); document.getElementById('levelup').classList.remove('on');
+      paused=false; lastTs=performance.now(); requestAnimationFrame(loop); };
+    box.appendChild(d);
+  });
+  document.getElementById('levelup').classList.add('on');
+}
+
+function gainXp(n){
+  player.xp+=n;
+  while(player.xp>=player.xpNext){
+    player.xp-=player.xpNext; player.lv++;
+    player.xpNext=Math.round(player.xpNext*1.4)+2;
+    offerLevelUp();
+  }
+}
+
+// ===== 메인 루프 =====
+function loop(ts){
+  if(!running) return;
+  const dt=Math.min(50, ts-lastTs); lastTs=ts;
+  if(!paused){ update(dt); draw(); requestAnimationFrame(loop); }
+}
+
+function update(dt){
+  time += dt/1000;
+  // 플레이어 이동
+  let dx=0,dy=0;
+  if(keys['arrowleft']||keys['a']) dx--;
+  if(keys['arrowright']||keys['d']) dx++;
+  if(keys['arrowup']||keys['w']) dy--;
+  if(keys['arrowdown']||keys['s']) dy++;
+  if(dx||dy){ const m=Math.hypot(dx,dy); player.x+=dx/m*player.speed*dt/16.7; player.y+=dy/m*player.speed*dt/16.7; }
+  player.x=Math.max(player.r,Math.min(W-player.r,player.x));
+  player.y=Math.max(player.r,Math.min(H-player.r,player.y));
+
+  // 적 스폰 (시간 지날수록 빨라짐)
+  spawnAcc+=dt;
+  const interval=Math.max(250, 900-time*8);
+  while(spawnAcc>interval){ spawnAcc-=interval; spawnEnemy(); }
+
+  // 자동 공격
+  player.fireAcc+=dt;
+  while(player.fireAcc>player.fireRate){ player.fireAcc-=player.fireRate; autoFire(); }
+
+  // 적 이동 + 충돌
+  for(const e of enemies){
+    const a=Math.atan2(player.y-e.y, player.x-e.x);
+    e.x+=Math.cos(a)*e.speed*dt/16.7; e.y+=Math.sin(a)*e.speed*dt/16.7;
+    if(Math.hypot(e.x-player.x,e.y-player.y)<e.r+player.r){
+      player.hp-=e.dmg*dt/1000*4; // 접촉 지속 데미지
+    }
+  }
+
+  // 총알 이동 + 명중
+  for(const b of bullets){
+    b.x+=b.vx*dt/16.7; b.y+=b.vy*dt/16.7; b.life-=dt/16.7;
+    for(const e of enemies){
+      if(e.hp>0 && Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){
+        e.hp-=b.dmg;
+        if(b.pierce>0){ b.pierce--; } else { b.life=0; }
+        if(e.hp<=0){ orbs.push({x:e.x,y:e.y,r:4}); kills++; }
+        break;
+      }
+    }
+  }
+
+  // 경험치 오브 흡수
+  for(const o of orbs){
+    const d=Math.hypot(o.x-player.x,o.y-player.y);
+    if(d<60){ const a=Math.atan2(player.y-o.y,player.x-o.x); o.x+=Math.cos(a)*4; o.y+=Math.sin(a)*4; }
+    if(d<player.r+o.r){ o.dead=true; gainXp(1); }
+  }
+
+  // 정리
+  enemies=enemies.filter(e=>e.hp>0);
+  bullets=bullets.filter(b=>b.life>0 && b.x>-20&&b.x<W+20&&b.y>-20&&b.y<H+20);
+  orbs=orbs.filter(o=>!o.dead);
+
+  // HUD
+  document.getElementById('lv').textContent='Lv '+player.lv;
+  document.getElementById('kills').textContent='처치 '+kills;
+  document.getElementById('xpfill').style.width=(player.xp/player.xpNext*100)+'%';
+  const mm=String(Math.floor(time/60)).padStart(2,'0'), ss=String(Math.floor(time%60)).padStart(2,'0');
+  document.getElementById('timer').textContent=mm+':'+ss;
+
+  if(player.hp<=0) endGame();
+}
+
+function endGame(){
+  running=false;
+  const mm=String(Math.floor(time/60)).padStart(2,'0'), ss=String(Math.floor(time%60)).padStart(2,'0');
+  document.getElementById('finalTime').textContent=mm+':'+ss;
+  document.getElementById('finalKills').textContent=kills;
+  document.getElementById('gameover').classList.add('on');
+}
+
+// ===== 렌더 =====
+function draw(){
+  ctx.fillStyle='#11151c'; ctx.fillRect(0,0,W,H);
+  // 그리드
+  ctx.strokeStyle='rgba(255,255,255,0.03)';
+  for(let x=0;x<W;x+=40){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for(let y=0;y<H;y+=40){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+
+  // 경험치 오브
+  for(const o of orbs){ ctx.fillStyle='#6cf'; ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,7); ctx.fill(); }
+  // 적
+  for(const e of enemies){
+    ctx.fillStyle='#d9534f'; ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,7); ctx.fill();
+    // 체력바
+    if(e.hp<e.hpMax){ ctx.fillStyle='#000'; ctx.fillRect(e.x-e.r,e.y-e.r-6,e.r*2,3);
+      ctx.fillStyle='#6f6'; ctx.fillRect(e.x-e.r,e.y-e.r-6,e.r*2*(e.hp/e.hpMax),3); }
+  }
+  // 총알
+  ctx.fillStyle='#ffd24a';
+  for(const b of bullets){ ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,7); ctx.fill(); }
+  // 플레이어
+  ctx.fillStyle='#4ad'; ctx.beginPath(); ctx.arc(player.x,player.y,player.r,0,7); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(player.x,player.y,player.r-4,0,7); ctx.fill();
+  // 플레이어 체력바
+  ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(player.x-16,player.y-player.r-10,32,4);
+  ctx.fillStyle='#5d5'; ctx.fillRect(player.x-16,player.y-player.r-10,32*(player.hp/player.hpMax),4);
+}
+</script>
+</body>
+</html>

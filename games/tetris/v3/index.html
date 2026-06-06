@@ -27,18 +27,15 @@
     transition: background 200ms ease, color 200ms ease;
   }
   body[data-bg="cat"] {
-    --page-bg:
-      radial-gradient(circle at 14% 12%, rgba(255, 214, 92, 0.26), transparent 26%),
-      radial-gradient(circle at 84% 20%, rgba(75, 151, 88, 0.3), transparent 34%),
-      linear-gradient(135deg, #274b2c 0%, #172c1c 54%, #0f1b12 100%);
-    --panel-bg: rgba(15, 27, 17, 0.92);
-    --panel-border: rgba(190, 222, 133, 0.32);
-    --canvas-bg: #111b12;
-    --text-main: #f6f4df;
-    --text-muted: #bac6a0;
-    --accent: #e3c75a;
-    --button-a: #d2aa43;
-    --button-b: #678f3e;
+    --page-bg: #15171f;
+    --panel-bg: #0c0e14;
+    --panel-border: #2a2e3a;
+    --canvas-bg: #0c0e14;
+    --text-main: #e8e8e8;
+    --text-muted: #8a93a6;
+    --accent: #4a8fe0;
+    --button-a: #5a9ff0;
+    --button-b: #3a7fd0;
   }
   body[data-bg="cyberpunk"] {
     --page-bg:
@@ -438,7 +435,7 @@ function cell(g, x, y, color, sz) {
     g.strokeRect(px+5, py+5, sz-10, sz-10);
     g.fillStyle = 'rgba(255,255,255,0.08)';
     g.fillRect(px+sz-7, py+4, 3, sz-8);
-  } else {
+  } else if (activeBlock === 'fantasy') {
     g.fillStyle = 'rgba(255,255,255,0.12)';
     g.beginPath();
     g.moveTo(px+sz/2, py+4);

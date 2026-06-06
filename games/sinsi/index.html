@@ -32,13 +32,47 @@
       var(--bg);
   }
   #title::after {
-    content:''; position:absolute; inset:0;
+    content:''; position:absolute; inset:0; z-index:2;
     background:radial-gradient(circle at 50% 0%, rgba(180,200,140,0.08), transparent 55%);
     pointer-events:none;
   }
 
+  /* 배경 이미지 레이어 (느린 줌) */
+  .bg-layer {
+    position:absolute; inset:0; z-index:0;
+    background-size:cover; background-position:center;
+    opacity:0; transition:opacity 1.2s ease;
+  }
+  .bg-layer.on { opacity:1; animation:slowZoom 28s ease-in-out infinite alternate; }
+  @keyframes slowZoom { from{transform:scale(1.02);} to{transform:scale(1.14);} }
+
+  /* 그라데이션 오버레이 (가독성) */
+  .bg-grad {
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:
+      linear-gradient(90deg, rgba(6,9,10,0.78) 0%, rgba(6,9,10,0.42) 24%, rgba(6,9,10,0.05) 48%, rgba(6,9,10,0) 100%),
+      linear-gradient(0deg, rgba(6,9,10,0.6) 0%, rgba(6,9,10,0) 32%);
+  }
+
+  /* 빛 입자 */
+  .particles { position:absolute; inset:0; z-index:2; overflow:hidden; pointer-events:none; }
+  .particle {
+    position:absolute; bottom:-12px; border-radius:50%;
+    background:rgba(228,238,185,0.9); box-shadow:0 0 8px rgba(220,230,160,0.85);
+    animation:floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0%{ transform:translateY(0); opacity:0; }
+    12%{ opacity:.85; }
+    88%{ opacity:.6; }
+    100%{ transform:translateY(-104vh); opacity:0; }
+  }
+
+  /* 진입 페이드인 */
+  @keyframes fadeUp { from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
   .frame {
-    position:absolute; inset:0;
+    position:absolute; inset:0; z-index:3;
     padding:6vh 5vw;
     display:flex; flex-direction:column; justify-content:center; align-items:center;
   }
@@ -49,6 +83,8 @@
     pointer-events:none; z-index:0;
   }
   .logo, .menu { position:relative; z-index:1; }
+  .logo { animation:fadeUp 1.6s ease both; }
+  .menu { animation:fadeUp 1.6s ease .5s both; }
 
   /* 제목 */
   .logo { margin-bottom:6vh; text-align:center; }
@@ -113,6 +149,9 @@
 <body>
 
 <div id="title">
+  <div class="bg-layer" id="bgLayer"></div>
+  <div class="bg-grad"></div>
+  <div class="particles" id="particles"></div>
   <div class="frame">
     <div class="logo">
       <span class="kor-top">신시</span>
@@ -135,17 +174,35 @@
 <script>
 const SAVE_KEY = 'sinsi_save_v1';
 
-// 배경 이미지 자동 연결 (title.png 를 이 폴더에 넣으면 적용)
+// 배경 이미지 자동 연결 (title.png 를 이 폴더에 넣으면 적용 + 느린 줌)
 (function loadBg(){
   const candidates=['title.png','title.jpg','title.webp']; let i=0;
   (function tryNext(){
     if(i>=candidates.length) return;
     const img=new Image();
-    img.onload=()=>{ const t=document.getElementById('title');
-      t.style.setProperty('--bg',`url('${candidates[i]}')`); t.classList.add('has-bg'); };
+    img.onload=()=>{ const bg=document.getElementById('bgLayer');
+      bg.style.backgroundImage=`url('${candidates[i]}')`; bg.classList.add('on');
+      document.getElementById('title').classList.add('has-bg'); };
     img.onerror=()=>{ i++; tryNext(); };
     img.src=candidates[i];
   })();
+})();
+
+// 빛 입자 생성
+(function spawnParticles(){
+  const box=document.getElementById('particles');
+  const N=26;
+  for(let i=0;i<N;i++){
+    const p=document.createElement('div'); p.className='particle';
+    const size=2+Math.random()*4;
+    p.style.width=size+'px'; p.style.height=size+'px';
+    p.style.left=Math.random()*100+'%';
+    const dur=10+Math.random()*14;
+    p.style.animationDuration=dur+'s';
+    p.style.animationDelay=(-Math.random()*dur)+'s';
+    p.style.opacity=0.3+Math.random()*0.5;
+    box.appendChild(p);
+  }
 })();
 
 if(!localStorage.getItem(SAVE_KEY)) document.getElementById('mContinue').classList.add('disabled');

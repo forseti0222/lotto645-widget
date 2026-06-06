@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Tetris clone made with HTML</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --page-bg:
+      radial-gradient(circle at 20% 15%, rgba(120, 180, 95, 0.28), transparent 32%),
+      linear-gradient(135deg, #264127 0%, #152819 55%, #101710 100%);
+    --panel-bg: rgba(13, 19, 17, 0.9);
+    --panel-border: rgba(174, 210, 138, 0.28);
+    --canvas-bg: #101710;
+    --text-main: #f2f6e8;
+    --text-muted: #a8b89d;
+    --accent: #9ac45d;
+    --button-a: #8db857;
+    --button-b: #4e7f38;
+  }
+  body {
+    background: var(--page-bg); color: var(--text-main);
+    font-family: 'Segoe UI', sans-serif;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; padding: 20px; gap: 20px;
+    transition: background 200ms ease, color 200ms ease;
+  }
+  body[data-bg="cat"] {
+    --page-bg:
+      radial-gradient(circle at 14% 12%, rgba(255, 214, 92, 0.26), transparent 26%),
+      radial-gradient(circle at 84% 20%, rgba(75, 151, 88, 0.3), transparent 34%),
+      linear-gradient(135deg, #274b2c 0%, #172c1c 54%, #0f1b12 100%);
+    --panel-bg: rgba(15, 27, 17, 0.92);
+    --panel-border: rgba(190, 222, 133, 0.32);
+    --canvas-bg: #111b12;
+    --text-main: #f6f4df;
+    --text-muted: #bac6a0;
+    --accent: #e3c75a;
+    --button-a: #d2aa43;
+    --button-b: #678f3e;
+  }
+  body[data-bg="cyberpunk"] {
+    --page-bg:
+      radial-gradient(circle at 22% 18%, rgba(255, 38, 190, 0.32), transparent 30%),
+      radial-gradient(circle at 78% 10%, rgba(0, 228, 255, 0.28), transparent 28%),
+      linear-gradient(135deg, #100a22 0%, #101227 50%, #041018 100%);
+    --panel-bg: rgba(8, 10, 28, 0.93);
+    --panel-border: rgba(0, 238, 255, 0.34);
+    --canvas-bg: #070916;
+    --text-main: #f1f5ff;
+    --text-muted: #8ea1c9;
+    --accent: #00e8ff;
+    --button-a: #ff2abb;
+    --button-b: #00aee8;
+  }
+  body[data-bg="fantasy"] {
+    --page-bg:
+      radial-gradient(circle at 18% 16%, rgba(101, 211, 162, 0.26), transparent 34%),
+      radial-gradient(circle at 78% 24%, rgba(221, 185, 92, 0.24), transparent 30%),
+      linear-gradient(135deg, #102c2e 0%, #1e264a 48%, #18102c 100%);
+    --panel-bg: rgba(13, 18, 38, 0.92);
+    --panel-border: rgba(218, 189, 108, 0.34);
+    --canvas-bg: #0d1424;
+    --text-main: #f4f1df;
+    --text-muted: #aeb8ce;
+    --accent: #d9bd69;
+    --button-a: #2fbf94;
+    --button-b: #8163d8;
+  }
+  canvas { background: var(--canvas-bg); border: 2px solid var(--panel-border); border-radius: 6px; display: block; }
+  .panel { display: flex; flex-direction: column; gap: 14px; min-width: 130px; }
+  .box { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px; text-align: center; }
+  .box h2 { font-size: 12px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+  .box .val { font-size: 26px; font-weight: 700; }
+  .keys { font-size: 12px; line-height: 1.9; color: var(--text-muted); text-align: left; }
+  .keys b { color: var(--text-main); }
+  .skin-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .skin-btn {
+    width: 100%; min-height: 34px; padding: 6px 4px; margin: 0;
+    border: 1px solid var(--panel-border); border-radius: 6px;
+    background: rgba(255,255,255,0.06); color: var(--text-main);
+    box-shadow: none; font-size: 11px; font-weight: 700; letter-spacing: 0;
+  }
+  .skin-btn:hover { background: rgba(255,255,255,0.11); }
+  .skin-btn.active { border-color: var(--accent); box-shadow: 0 0 12px rgba(255,255,255,0.24); color: #fff; }
+  .skin-dot {
+    display: block; width: 18px; height: 18px; border-radius: 5px;
+    margin: 0 auto 4px; border: 1px solid rgba(255,255,255,0.35);
+  }
+  .dot-cat { background: linear-gradient(135deg, #f6b76a, #f4d6a6 55%, #e899a7); }
+  .dot-cyberpunk { background: linear-gradient(135deg, #ff27c8, #00e8ff); }
+  .dot-fantasy { background: linear-gradient(135deg, #37c89d, #d9bd69 55%, #7256c9); }
+  button.skin-btn:disabled {
+    opacity: 0.45; cursor: not-allowed; filter: grayscale(0.4);
+  }
+  button.skin-btn:disabled:hover { background: rgba(255,255,255,0.06); }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(12,14,20,0.9);
+    display: none; flex-direction: column; justify-content: center; align-items: center; gap: 18px;
+  }
+  .overlay h1 { font-size: 30px; }
+  .overlay .s { color: var(--text-muted); }
+  button {
+    background: linear-gradient(180deg,var(--button-a),var(--button-b)); color: #fff; border: none; border-radius: 10px;
+    padding: 20px 56px; font-size: 22px; font-weight: 800; cursor: pointer; letter-spacing: 2px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35); margin-top: 6px;
+  }
+  button:hover { filter: brightness(1.1); }
+  button:active { transform: translateY(2px); box-shadow: 0 2px 10px rgba(74,143,224,0.4); }
+  button.skin-btn {
+    min-height: 34px; padding: 6px 4px; margin: 0;
+    border: 1px solid var(--panel-border); border-radius: 6px;
+    background: rgba(255,255,255,0.06); box-shadow: none;
+    font-size: 11px; font-weight: 700; letter-spacing: 0;
+  }
+  button.skin-btn:hover { background: rgba(255,255,255,0.11); filter: none; }
+  button.skin-btn:active { transform: none; box-shadow: none; }
+  button.skin-btn.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(255,255,255,0.24);
+  }
+  .logo {
+    width: 72px; height: 72px; border: 3px solid var(--accent); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 42px; font-weight: 800; color: var(--accent);
+    box-shadow: 0 0 24px rgba(0,0,0,0.4);
+  }
+  .game-title { font-size: 38px; letter-spacing: 6px; }
+  .guide {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+    margin-top: 12px; max-width: 320px;
+  }
+  .guide span {
+    background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 8px 14px; font-size: 15px; color: var(--text-main);
+  }
+  .guide b { color: var(--accent); font-weight: 800; }
+</style>
+</head>
+<body>
+  <canvas id="board" width="300" height="600"></canvas>
+  <div class="panel">
+    <div class="box"><h2>점수</h2><div class="val" id="score">0</div></div>
+    <div class="box"><h2>다음</h2><canvas id="next" width="106" height="106" style="display:block;margin:0 auto;"></canvas></div>
+    <div class="box keys">
+      <b>← →</b> 이동<br>
+      <b>↑</b> 회전<br>
+      <b>↓</b> 빠른 낙하<br>
+      <b>Space</b> 즉시 낙하
+    </div>
+    <div class="box">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;justify-content:center;font-size:14px;">
+        <input type="checkbox" id="ghostToggle" checked style="width:16px;height:16px;cursor:pointer;">
+        낙하지점 표시
+      </label>
+    </div>
+    <div class="box">
+      <h2>배경</h2>
+      <div class="skin-grid" data-skin-group="background">
+        <button class="skin-btn" type="button" data-bg-choice="cat"><span class="skin-dot dot-cat"></span>고양이</button>
+        <button class="skin-btn" type="button" data-bg-choice="cyberpunk" disabled><span class="skin-dot dot-cyberpunk"></span>사이버 예정</button>
+        <button class="skin-btn" type="button" data-bg-choice="fantasy" disabled><span class="skin-dot dot-fantasy"></span>판타지 예정</button>
+      </div>
+    </div>
+    <div class="box">
+      <h2>블록</h2>
+      <div class="skin-grid" data-skin-group="block">
+        <button class="skin-btn" type="button" data-block-choice="cat"><span class="skin-dot dot-cat"></span>고양이</button>
+        <button class="skin-btn" type="button" data-block-choice="cyberpunk" disabled><span class="skin-dot dot-cyberpunk"></span>사이버 예정</button>
+        <button class="skin-btn" type="button" data-block-choice="fantasy" disabled><span class="skin-dot dot-fantasy"></span>판타지 예정</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="titleScreen" style="display:flex">
+    <div class="logo">T</div>
+    <h1 class="game-title" style="font-size:22px;letter-spacing:1px">A Tetris clone<br>made with HTML</h1>
+    <button onclick="startGame()">게임 시작 ▶</button>
+    <div class="guide">
+      <span><b>← →</b> 이동</span>
+      <span><b>↑</b> 회전</span>
+      <span><b>↓</b> 빠른 낙하</span>
+      <span><b>Space</b> 즉시 낙하</span>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <h1>게임 오버</h1>
+    <div class="s">점수 <span id="finalScore">0</span></div>
+    <button onclick="startGame()">다시 시작</button>
+  </div>
+
+<script>
+const COLS = 10, ROWS = 20, SIZE = 30;
+const ctx = document.getElementById('board').getContext('2d');
+const nctx = document.getElementById('next').getContext('2d');
+
+const STORAGE_KEYS = { bg:'tetris-v3-bg', block:'tetris-v3-block' };
+const THEME_NAMES = ['cat', 'cyberpunk', 'fantasy'];
+const BACKGROUNDS = {
+  cat: { base:'#f0d8bc', grid:'rgba(142,91,58,0.1)', haze:'rgba(255,236,210,0.26)', image:'assets/cat.jpg' },
+  cyberpunk: { base:'#070916', grid:'rgba(0,232,255,0.11)', haze:'rgba(255,42,187,0.14)', image:'assets/bg-cyberpunk.png' },
+  fantasy: { base:'#0d1424', grid:'rgba(217,189,105,0.1)', haze:'rgba(67,207,159,0.12)', image:'assets/bg-fantasy.png' }
+};
+const BLOCK_SKINS = {
+  cat: {
+    image:'assets/block-cat.png',
+    colors:{ I:'#4fc3d9', O:'#e6c84c', T:'#a66bd4', S:'#5fc26b', Z:'#e36464', J:'#5a7fd4', L:'#e0944c' },
+    stroke:'rgba(0,0,0,0.4)', shine:'rgba(255,255,255,0.2)'
+  },
+  cyberpunk: {
+    image:'assets/block-cyberpunk.png',
+    colors:{ I:'#00e8ff', O:'#ffe95e', T:'#ff2abb', S:'#33ff9a', Z:'#ff446c', J:'#6378ff', L:'#ff9f2f' },
+    stroke:'rgba(0,232,255,0.62)', shine:'rgba(255,255,255,0.55)'
+  },
+  fantasy: {
+    image:'assets/block-fantasy.png',
+    colors:{ I:'#6fd8ff', O:'#d9bd69', T:'#9b7aea', S:'#43cf9f', Z:'#d66f8f', J:'#5f8dd8', L:'#d3914a' },
+    stroke:'rgba(245,220,143,0.55)', shine:'rgba(255,250,214,0.45)'
+  }
+};
+const CAT_SPRITES = {
+  I:'assets/cat-I.png',
+  O:'assets/cat-O.png',
+  T:'assets/cat-T.png',
+  S:'assets/cat-S.png',
+  Z:'assets/cat-Z.png',
+  J:'assets/cat-J.png',
+  L:'assets/cat-L.png'
+};
+const SHAPES = {
+  I:[[1,1,1,1]], O:[[1,1],[1,1]], T:[[0,1,0],[1,1,1]],
+  S:[[0,1,1],[1,1,0]], Z:[[1,1,0],[0,1,1]], J:[[1,0,0],[1,1,1]], L:[[0,0,1],[1,1,1]]
+};
+const TYPES = Object.keys(SHAPES);
+
+let grid, cur, nextType, score, over, dropTimer, lockedSprites, nextSpriteId;
+let activeBg = loadChoice(STORAGE_KEYS.bg, 'cat');
+let activeBlock = loadChoice(STORAGE_KEYS.block, 'cat');
+const imageCache = {};
+
+function loadChoice(key, fallback) {
+  try {
+    const saved = localStorage.getItem(key);
+    return THEME_NAMES.includes(saved) ? saved : fallback;
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function saveChoice(key, value) {
+  try { localStorage.setItem(key, value); } catch (_) {}
+}
+
+function preloadImage(src) {
+  const img = new Image();
+  img.onload = () => {
+    if (grid) {
+      if (cur && !over) draw(); else draw2();
+      if (nextType) drawNext();
+    }
+  };
+  img.src = src;
+  imageCache[src] = img;
+}
+
+THEME_NAMES.forEach(name => {
+  preloadImage(BACKGROUNDS[name].image);
+  preloadImage(BLOCK_SKINS[name].image);
+});
+Object.values(CAT_SPRITES).forEach(preloadImage);
+
+function readyImage(src) {
+  const img = imageCache[src];
+  return img && img.complete && img.naturalWidth > 0 ? img : null;
+}
+
+function newGrid() { return Array.from({length:ROWS}, () => Array(COLS).fill(null)); }
+function cellType(v) { return typeof v === 'string' ? v : v && v.type; }
+function cellId(v) { return v && typeof v === 'object' ? v.id : null; }
+function rand() { return TYPES[Math.floor(Math.random()*TYPES.length)]; }
+
+function spawn() {
+  const t = nextType || rand();
+  nextType = rand();
+  const shape = SHAPES[t].map(r => r.slice());
+  cur = { type:t, shape, x:Math.floor((COLS-shape[0].length)/2), y:0 };
+  if (collides(cur.shape, cur.x, cur.y)) gameOver();
+  drawNext();
+}
+
+function collides(s, x, y) {
+  for (let r=0; r<s.length; r++) for (let c=0; c<s[r].length; c++) {
+    if (!s[r][c]) continue;
+    const nx=x+c, ny=y+r;
+    if (nx<0 || nx>=COLS || ny>=ROWS) return true;
+    if (ny>=0 && grid[ny][nx]) return true;
+  }
+  return false;
+}
+
+function rotate(s) {
+  const R=s.length, C=s[0].length, o=Array.from({length:C},()=>Array(R).fill(0));
+  for (let r=0;r<R;r++) for (let c=0;c<C;c++) o[c][R-1-r]=s[r][c];
+  return o;
+}
+
+function merge() {
+  const id = nextSpriteId++;
+  const locked = { id, type:cur.type, shape:cur.shape.map(row => row.slice()), x:cur.x, y:cur.y };
+  lockedSprites.push(locked);
+  cur.shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if(v){
+      const ny=cur.y+r;
+      if(ny>=0) grid[ny][cur.x+c]={ type:cur.type, id };
+    }
+  }));
+}
+
+function clearLines() {
+  const clearedRows = [];
+  for (let r=0; r<ROWS; r++) {
+    if (grid[r].every(c=>c)) clearedRows.push(r);
+  }
+  if (!clearedRows.length) return;
+
+  let cl=0;
+  for (let i=clearedRows.length-1; i>=0; i--) {
+    grid.splice(clearedRows[i],1);
+    grid.unshift(Array(COLS).fill(null));
+    cl++;
+  }
+
+  lockedSprites = lockedSprites.map(sprite => clipLockedSprite(sprite, clearedRows)).filter(Boolean);
+
+  if (cl) { score += [0,100,300,500,800][cl]; document.getElementById('score').textContent = score; }
+}
+
+function clipLockedSprite(sprite, clearedRows) {
+  const cleared = new Set(clearedRows);
+  const cells = [];
+
+  sprite.shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if (!v) return;
+    const absRow = sprite.y + r;
+    if (cleared.has(absRow)) return;
+    const drop = clearedRows.filter(clearedRow => clearedRow > absRow).length;
+    cells.push({ x:sprite.x + c, y:absRow + drop });
+  }));
+
+  if (!cells.length) return null;
+
+  const minX = Math.min(...cells.map(cell => cell.x));
+  const maxX = Math.max(...cells.map(cell => cell.x));
+  const minY = Math.min(...cells.map(cell => cell.y));
+  const maxY = Math.max(...cells.map(cell => cell.y));
+  const shape = Array.from({ length:maxY - minY + 1 }, () => Array(maxX - minX + 1).fill(0));
+  cells.forEach(cell => { shape[cell.y - minY][cell.x - minX] = 1; });
+
+  return { ...sprite, shape, x:minX, y:minY };
+}
+
+function lock() { merge(); clearLines(); spawn(); }
+function step() { if (!collides(cur.shape, cur.x, cur.y+1)) cur.y++; else lock(); draw(); }
+function move(dx) { if (!collides(cur.shape, cur.x+dx, cur.y)) { cur.x+=dx; draw(); } }
+function softDrop() { if (!collides(cur.shape, cur.x, cur.y+1)) { cur.y++; draw(); } else lock(); }
+function hardDrop() { while (!collides(cur.shape, cur.x, cur.y+1)) cur.y++; lock(); draw(); }
+function tryRotate() {
+  const r = rotate(cur.shape);
+  for (const k of [0,-1,1,-2,2]) if (!collides(r, cur.x+k, cur.y)) { cur.shape=r; cur.x+=k; draw(); return; }
+}
+
+function colorFor(type) {
+  return BLOCK_SKINS[activeBlock].colors[type];
+}
+
+function drawCoverImage(g, img, w, h) {
+  const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const sw = w / scale, sh = h / scale;
+  const sx = (img.naturalWidth - sw) / 2;
+  const sy = (img.naturalHeight - sh) / 2;
+  g.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+}
+
+function drawContainImage(g, img, w, h) {
+  const scale = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+  const dw = img.naturalWidth * scale;
+  const dh = img.naturalHeight * scale;
+  const dx = (w - dw) / 2;
+  const dy = (h - dh) / 2;
+  g.drawImage(img, dx, dy, dw, dh);
+}
+
+function drawBoardBase(g, w, h) {
+  const bg = BACKGROUNDS[activeBg];
+  const img = readyImage(bg.image);
+  if (img) {
+    g.fillStyle = bg.base;
+    g.fillRect(0, 0, w, h);
+    if (activeBg === 'cat') drawContainImage(g, img, w, h);
+    else drawCoverImage(g, img, w, h);
+    g.fillStyle = 'rgba(0,0,0,0.48)';
+    g.fillRect(0, 0, w, h);
+  } else {
+    const grad = g.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, bg.base);
+    grad.addColorStop(0.55, '#0b0d14');
+    grad.addColorStop(1, bg.base);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = bg.haze;
+    g.beginPath();
+    g.arc(w * 0.22, h * 0.16, w * 0.42, 0, Math.PI * 2);
+    g.arc(w * 0.82, h * 0.1, w * 0.28, 0, Math.PI * 2);
+    g.fill();
+  }
+}
+
+function drawGrid(g, cols, rows, sz) {
+  g.strokeStyle = BACKGROUNDS[activeBg].grid;
+  for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) g.strokeRect(c*sz,r*sz,sz,sz);
+}
+
+function cell(g, x, y, color, sz) {
+  const skin = BLOCK_SKINS[activeBlock];
+  const img = readyImage(skin.image);
+  const px = x * sz, py = y * sz;
+  g.fillStyle = color;
+  g.fillRect(px, py, sz, sz);
+  if (img) {
+    g.save();
+    g.globalAlpha = 0.48;
+    g.drawImage(img, px, py, sz, sz);
+    g.restore();
+  } else if (activeBlock === 'cyberpunk') {
+    g.strokeStyle = 'rgba(255,255,255,0.22)';
+    g.strokeRect(px+5, py+5, sz-10, sz-10);
+    g.fillStyle = 'rgba(255,255,255,0.08)';
+    g.fillRect(px+sz-7, py+4, 3, sz-8);
+  } else {
+    g.fillStyle = 'rgba(255,255,255,0.12)';
+    g.beginPath();
+    g.moveTo(px+sz/2, py+4);
+    g.lineTo(px+sz-5, py+sz/2);
+    g.lineTo(px+sz/2, py+sz-5);
+    g.lineTo(px+5, py+sz/2);
+    g.closePath();
+    g.fill();
+  }
+  g.fillStyle = skin.shine;
+  g.fillRect(px, py, sz, Math.max(2, sz * 0.12));
+  g.strokeStyle = skin.stroke;
+  g.lineWidth = 1;
+  g.strokeRect(px+0.5, py+0.5, sz-1, sz-1);
+}
+
+function drawShapeCells(g, shape, type, x, y, sz) {
+  shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if (v && y + r >= 0) cell(g, x + c, y + r, colorFor(type), sz);
+  }));
+}
+
+function clipShape(g, shape, x, y, sz) {
+  g.beginPath();
+  shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if (v && y + r >= 0) g.rect((x + c) * sz, (y + r) * sz, sz, sz);
+  }));
+  g.clip();
+}
+
+function drawPieceSprite(g, type, shape, x, y, sz, alpha = 1) {
+  const img = readyImage(CAT_SPRITES[type]);
+  if (activeBlock !== 'cat' || type !== 'O' || !img) {
+    g.save();
+    g.globalAlpha = alpha;
+    drawShapeCells(g, shape, type, x, y, sz);
+    g.restore();
+    return;
+  }
+  const w = shape[0].length * sz;
+  const h = shape.length * sz;
+  const px = x * sz;
+  const py = y * sz;
+  g.save();
+  g.globalAlpha = alpha;
+  clipShape(g, shape, x, y, sz);
+  g.drawImage(img, px, py, w, h);
+  g.restore();
+}
+
+function draw() {
+  drawBoardBase(ctx, 300, 600);
+  drawGrid(ctx, COLS, ROWS, SIZE);
+  for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++) {
+    if (!grid[r][c]) continue;
+    if (activeBlock === 'cat' && cellType(grid[r][c]) === 'O' && cellId(grid[r][c]) !== null) continue;
+    cell(ctx,c,r,colorFor(cellType(grid[r][c])),SIZE);
+  }
+  if (activeBlock === 'cat') {
+    lockedSprites.forEach(sprite => drawPieceSprite(ctx, sprite.type, sprite.shape, sprite.x, sprite.y, SIZE));
+  }
+  // 고스트(낙하지점 미리보기) — 현재 조각 그리기 직전에 반투명으로
+  let gy = cur.y;
+  while (!collides(cur.shape, cur.x, gy+1)) gy++;
+  if (gy > cur.y && document.getElementById('ghostToggle').checked) {
+    drawPieceSprite(ctx, cur.type, cur.shape, cur.x, gy, SIZE, 0.25);
+  }
+  drawPieceSprite(ctx, cur.type, cur.shape, cur.x, cur.y, SIZE);
+}
+
+function drawNext() {
+  drawBoardBase(nctx, 106, 106);
+  const s = SHAPES[nextType], w=s[0].length, h=s.length, sz=24, ox=(106-w*sz)/2, oy=(106-h*sz)/2;
+  nctx.save(); nctx.translate(ox,oy);
+  drawPieceSprite(nctx, nextType, s, 0, 0, sz);
+  nctx.restore();
+}
+
+function gameOver() {
+  over = true; clearInterval(dropTimer);
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function startGame() {
+  grid = newGrid(); lockedSprites = []; nextSpriteId = 1; score = 0; over = false; nextType = null;
+  document.getElementById('score').textContent = 0;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('titleScreen').style.display = 'none';
+  spawn(); draw();
+  clearInterval(dropTimer); dropTimer = setInterval(step, 500);
+}
+
+document.addEventListener('keydown', e => {
+  // 게임 조작키는 브라우저 기본 동작(스크롤) 막기
+  if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
+  if (!cur || over) return;
+  switch (e.key) {
+    case 'ArrowLeft': move(-1); break;
+    case 'ArrowRight': move(1); break;
+    case 'ArrowUp': tryRotate(); break;
+    case 'ArrowDown': softDrop(); break;
+    case ' ': hardDrop(); break;
+  }
+});
+
+function setBackgroundSkin(name) {
+  activeBg = name;
+  saveChoice(STORAGE_KEYS.bg, name);
+  applySkinState();
+  if (cur && !over) draw(); else draw2();
+  if (nextType) drawNext();
+}
+
+function setBlockSkin(name) {
+  activeBlock = name;
+  saveChoice(STORAGE_KEYS.block, name);
+  applySkinState();
+  if (cur && !over) draw(); else draw2();
+  if (nextType) drawNext();
+}
+
+function applySkinState() {
+  document.body.dataset.bg = activeBg;
+  document.querySelectorAll('[data-bg-choice]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.bgChoice === activeBg);
+  });
+  document.querySelectorAll('[data-block-choice]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.blockChoice === activeBlock);
+  });
+}
+
+document.querySelectorAll('[data-bg-choice]').forEach(btn => {
+  btn.addEventListener('click', () => { if (!btn.disabled) setBackgroundSkin(btn.dataset.bgChoice); });
+});
+
+document.querySelectorAll('[data-block-choice]').forEach(btn => {
+  btn.addEventListener('click', () => { if (!btn.disabled) setBlockSkin(btn.dataset.blockChoice); });
+});
+
+document.getElementById('ghostToggle').addEventListener('change', () => {
+  if (cur && !over) draw();
+});
+
+// 로드 시 빈 게임판만 그려두고, 시작 버튼을 누르면 게임 시작
+grid = newGrid();
+lockedSprites = [];
+nextSpriteId = 1;
+applySkinState();
+draw2();
+function draw2() {
+  drawBoardBase(ctx, 300, 600);
+  drawGrid(ctx, COLS, ROWS, SIZE);
+}
+</script>
+</body>
+</html>

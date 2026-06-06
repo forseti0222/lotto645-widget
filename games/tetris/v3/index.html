@@ -199,35 +199,35 @@ const nctx = document.getElementById('next').getContext('2d');
 const STORAGE_KEYS = { bg:'tetris-v3-bg', block:'tetris-v3-block' };
 const THEME_NAMES = ['cat', 'cyberpunk', 'fantasy'];
 const BACKGROUNDS = {
-  cat: { base:'#f0d8bc', grid:'rgba(142,91,58,0.1)', haze:'rgba(255,236,210,0.26)', image:'assets/cat.jpg' },
-  cyberpunk: { base:'#070916', grid:'rgba(0,232,255,0.11)', haze:'rgba(255,42,187,0.14)', image:'assets/bg-cyberpunk.png' },
-  fantasy: { base:'#0d1424', grid:'rgba(217,189,105,0.1)', haze:'rgba(67,207,159,0.12)', image:'assets/bg-fantasy.png' }
+  cat: { base:'#f0d8bc', grid:'rgba(142,91,58,0.1)', haze:'rgba(255,236,210,0.26)', image:'../assets/cat.jpg' },
+  cyberpunk: { base:'#070916', grid:'rgba(0,232,255,0.11)', haze:'rgba(255,42,187,0.14)', image:'../assets/bg-cyberpunk.png' },
+  fantasy: { base:'#0d1424', grid:'rgba(217,189,105,0.1)', haze:'rgba(67,207,159,0.12)', image:'../assets/bg-fantasy.png' }
 };
 const BLOCK_SKINS = {
   cat: {
-    image:'assets/block-cat.png',
+    image:'../assets/block-cat.png',
     colors:{ I:'#4fc3d9', O:'#e6c84c', T:'#a66bd4', S:'#5fc26b', Z:'#e36464', J:'#5a7fd4', L:'#e0944c' },
     stroke:'rgba(0,0,0,0.4)', shine:'rgba(255,255,255,0.2)'
   },
   cyberpunk: {
-    image:'assets/block-cyberpunk.png',
+    image:'../assets/block-cyberpunk.png',
     colors:{ I:'#00e8ff', O:'#ffe95e', T:'#ff2abb', S:'#33ff9a', Z:'#ff446c', J:'#6378ff', L:'#ff9f2f' },
     stroke:'rgba(0,232,255,0.62)', shine:'rgba(255,255,255,0.55)'
   },
   fantasy: {
-    image:'assets/block-fantasy.png',
+    image:'../assets/block-fantasy.png',
     colors:{ I:'#6fd8ff', O:'#d9bd69', T:'#9b7aea', S:'#43cf9f', Z:'#d66f8f', J:'#5f8dd8', L:'#d3914a' },
     stroke:'rgba(245,220,143,0.55)', shine:'rgba(255,250,214,0.45)'
   }
 };
 const CAT_SPRITES = {
-  I:'assets/cat-I.png',
-  O:'assets/cat-O.png',
-  T:'assets/cat-T.png',
-  S:'assets/cat-S.png',
-  Z:'assets/cat-Z.png',
-  J:'assets/cat-J.png',
-  L:'assets/cat-L.png'
+  I:'../assets/cat-I.png',
+  O:'../assets/cat-O.png',
+  T:'../assets/cat-T.png',
+  S:'../assets/cat-S.png',
+  Z:'../assets/cat-Z.png',
+  J:'../assets/cat-J.png',
+  L:'../assets/cat-L.png'
 };
 const SHAPES = {
   I:[[1,1,1,1]], O:[[1,1],[1,1]], T:[[0,1,0],[1,1,1]],

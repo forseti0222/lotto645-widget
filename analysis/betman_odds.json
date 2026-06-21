@@ -1,0 +1,159 @@
+{
+  "date": "2026-06-21",
+  "source": "converted from daily_recommendations",
+  "games": [
+    {
+      "home": "애리조나 다이아몬드백스",
+      "away": "미네소타 트윈스",
+      "home_odds": 1.6,
+      "away_odds": 1.96,
+      "ou_line": 9.5,
+      "under": 1.65,
+      "over": 1.89
+    },
+    {
+      "home": "시카고 컵스",
+      "away": "토론토 블루제이스",
+      "home_odds": 1.65,
+      "away_odds": 1.89,
+      "ou_line": 9.5,
+      "under": 1.6,
+      "over": 1.96
+    },
+    {
+      "home": "콜로라도 로키스",
+      "away": "피츠버그 파이어리츠",
+      "home_odds": 2.43,
+      "away_odds": 1.38,
+      "ou_line": 10.5,
+      "under": 1.74,
+      "over": 1.78
+    },
+    {
+      "home": "디트로이트 타이거즈",
+      "away": "시카고 화이트삭스",
+      "home_odds": 1.55,
+      "away_odds": 2.04,
+      "ou_line": 8.5,
+      "under": 1.81,
+      "over": 1.71
+    },
+    {
+      "home": "휴스턴 애스트로스",
+      "away": "클리블랜드 가디언스",
+      "home_odds": 1.56,
+      "away_odds": 2.02,
+      "ou_line": 8.5,
+      "under": 1.66,
+      "over": 1.87
+    },
+    {
+      "home": "캔자스시티 로얄스",
+      "away": "세인트루이스 카디널스",
+      "home_odds": 1.86,
+      "away_odds": 1.67,
+      "ou_line": 9.5,
+      "under": 1.65,
+      "over": 1.89
+    },
+    {
+      "home": "LA 다저스",
+      "away": "볼티모어 오리올스",
+      "home_odds": 1.24,
+      "away_odds": 3.03,
+      "ou_line": 8.5,
+      "under": 1.73,
+      "over": 1.79
+    },
+    {
+      "home": "애슬레틱스",
+      "away": "LA 에인절스",
+      "home_odds": 1.49,
+      "away_odds": 2.15,
+      "ou_line": 9.5,
+      "under": 1.76,
+      "over": 1.76
+    },
+    {
+      "home": "시애틀 매리너스",
+      "away": "보스턴 레드삭스",
+      "home_odds": 1.63,
+      "away_odds": 1.91,
+      "ou_line": 7.5,
+      "under": 1.64,
+      "over": 1.9
+    },
+    {
+      "home": "탬파베이 레이스",
+      "away": "워싱턴 내셔널스",
+      "home_odds": 1.68,
+      "away_odds": 1.85,
+      "ou_line": 8.5,
+      "under": 1.74,
+      "over": 1.78
+    },
+    {
+      "home": "텍사스 레인저스",
+      "away": "샌디에이고 파드리스",
+      "home_odds": 1.55,
+      "away_odds": 2.04,
+      "ou_line": 7.5,
+      "under": 1.77,
+      "over": 1.75
+    },
+    {
+      "home": "필라델피아 필리스",
+      "away": "뉴욕 메츠",
+      "home_odds": 1.37,
+      "away_odds": 2.46,
+      "ou_line": 7.5,
+      "under": 1.71,
+      "over": 1.81
+    },
+    {
+      "home": "애틀랜타 브레이브스",
+      "away": "샌프란시스코 자이언츠",
+      "home_odds": 1.0,
+      "away_odds": 1.0,
+      "ou_line": 8.5,
+      "under": 1.0,
+      "over": 1.0
+    },
+    {
+      "home": "애틀랜타 브레이브스",
+      "away": "밀워키 브루어스",
+      "home_odds": 1.61,
+      "away_odds": 1.94,
+      "ou_line": 7.5,
+      "under": 1.7,
+      "over": 1.82
+    },
+    {
+      "home": "마이애미 말린스",
+      "away": "샌프란시스코 자이언츠",
+      "home_odds": 1.5,
+      "away_odds": 2.13,
+      "ou_line": 7.5,
+      "under": 1.77,
+      "over": 1.75
+    },
+    {
+      "home": "뉴욕 양키스",
+      "away": "신시내티 레즈",
+      "home_odds": 1.37,
+      "away_odds": 2.46,
+      "ou_line": 9.5,
+      "under": 1.66,
+      "over": 1.87
+    },
+    {
+      "home": "뉴욕 양키스",
+      "away": "시카고 화이트삭스",
+      "home_odds": 1.47,
+      "away_odds": 2.19,
+      "ou_line": 9.5,
+      "under": 1.73,
+      "over": 1.79
+    }
+  ]
+}

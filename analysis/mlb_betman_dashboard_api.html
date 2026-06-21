@@ -1238,6 +1238,7 @@ function weatherNoteHtml(wx, g){
   const notes=[];
   const homeId = g&&g.home ? g.home : null;
   const teams = g ? [g.home,g.away].filter(Boolean) : [];
+  const roofType = homeId!=null && BALLPARK_WEATHER[homeId] ? BALLPARK_WEATHER[homeId].roof : null;
   const goodPark = homeId!=null && HOT_TOTAL_PARKS.has(homeId);
   const parkAvg = homeId!=null ? HOT_PARK_AVG[homeId] : null;
   const parkText = parkAvg ? `${meta(homeId).ko} 경기장 더운 날 평균 ${parkAvg.toFixed(2)}점` : "";
@@ -1254,6 +1255,7 @@ function weatherNoteHtml(wx, g){
   if(wx.tempC!=null&&wx.tempC>=27){
     notes.push({cls:"slate",txt:"경기장 더운 날 평균",evidence:parkText||`${homeId?meta(homeId).ko:"이"} 경기장: 자료 부족`});
   }
+  if(roofType==="retractable") notes.push({cls:"slate",txt:"개폐식 구장",evidence:""});
   if(wx.tempC!=null&&wx.tempC>=27&&hotTeams.length){
     const names=hotTeams.map(id=>meta(id).ko).join(", ");
     notes.push({cls:"info",txt:"더운 날 점수팀 있음",evidence:`${names} · 더운 날 득점 상승 경향`});
